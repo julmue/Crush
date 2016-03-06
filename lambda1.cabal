@@ -1,22 +1,25 @@
 name:                lambda1
 version:             0.1.0.0
-synopsis:            Initial project template from stack
+synopsis:            Interpreter for the untyped lambda calculus
 description:         Please see README.md
-homepage:            http://github.com/githubuser/lambda1#readme
+homepage:            http://github.com/julmue/lambda1#readme
 license:             BSD3
 license-file:        LICENSE
 author:              Author name here
-maintainer:          example@example.com
-copyright:           2016 Author Here
-category:            Web
+maintainer:          jul.mue@hotmail.de
+copyright:           2016 Julian Müller
+category:            Language
 build-type:          Simple
 -- extra-source-files:
 cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:     Lambda
+                     , LambdaLib
+                     , LambdaInternal
   build-depends:       base >= 4.7 && < 5
+                     , QuickCheck
   default-language:    Haskell2010
 
 executable lambda1-exe
@@ -38,4 +41,4 @@ test-suite lambda1-test
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/lambda1
+  location: https://github.com/julmue/LambdaInterpreter1
