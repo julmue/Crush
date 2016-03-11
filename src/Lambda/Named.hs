@@ -5,14 +5,13 @@
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
 
-module Named (
+module Lambda.Named (
       Lambda (Var,Lam,(:@))
     ) where
 
 import Prelude hiding (abs)
 import Data.Char
 import Text.ParserCombinators.ReadP
--- import Text.Read (readPrec)
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
 import Data.Foldable
@@ -31,11 +30,6 @@ data Lambda a
     | (Lambda a) :@ (Lambda a)
     | Lam a (Lambda a)
 
--- printing
--- convention:
--- Application has higher precedence than Abstraction
--- Application Associates to the left
--- Lamtraction associates to the right
 instance Show a => Show (Lambda a) where
     showsPrec _ (Var n) = showString $ show n
     showsPrec d (Lam n e) = showParen (d>predLam) $
@@ -45,7 +39,6 @@ instance Show a => Show (Lambda a) where
         showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2 where
         predApp = 2
 
--- parsing
 spaces :: ReadP String
 spaces = many1 (satisfy isSpace)
 parens :: ReadP a -> ReadP a
@@ -72,7 +65,6 @@ expr = app <++ abs <++ atom
 instance Read a => Read (Lambda a) where
     readsPrec _ = readP_to_S expr
 
--- test data generator
 genLambda :: Arbitrary a => Int -> Gen (Lambda a)
 genLambda depth
     | depth <= 1 = Var <$> arbitrary
