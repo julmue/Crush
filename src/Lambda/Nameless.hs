@@ -29,4 +29,10 @@ instance Applicative Exp where
     pure = V
     (<*>) = ap
 
+-- smart constructor
+lam :: Eq a => a -> Exp a -> Exp a
+lam v b = L (abstract1 v b)
 
+infix 0 !
+(!) :: Eq a => a -> Exp a -> Exp a
+(!) = lam

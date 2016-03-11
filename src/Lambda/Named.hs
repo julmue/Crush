@@ -1,12 +1,15 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
 
 module Lambda.Named (
       Lambda (Var,Lam,(:@))
+    , foldL
+    , gfoldL
     ) where
 
 import Prelude hiding (abs)
@@ -29,6 +32,22 @@ data Lambda a
     = Var a
     | (Lambda a) :@ (Lambda a)
     | Lam a (Lambda a)
+    deriving (Functor, Foldable, Traversable)
+
+-- folds
+foldL :: (a -> b) -> (b -> b -> b) -> (a -> b -> b) -> Lambda a -> b
+foldL v _ _ (Var n) = v n
+foldL v a l (fun :@ arg) = a (foldL v a l fun) (foldL v a l arg)
+foldL v a l (Lam n body) = l n (foldL v a l body)
+
+gfoldL ::
+    (m a -> n b) -> (n b -> n b -> n b) ->
+    (m a -> n b -> n b) ->
+    Lambda (m a) -> n b
+gfoldL v _ _ (Var n) = v n
+gfoldL v a l (fun :@ arg) = a (gfoldL v a l fun) (gfoldL v a l arg)
+gfoldL v a l (Lam n body) = l n (gfoldL v a l body)
+
 
 instance Show a => Show (Lambda a) where
     showsPrec _ (Var n) = showString $ show n
@@ -43,8 +62,6 @@ spaces :: ReadP String
 spaces = many1 (satisfy isSpace)
 parens :: ReadP a -> ReadP a
 parens = between (char '(') (char ')')
-varName :: ReadP String
-varName = many1 $ satisfy isAlpha
 var :: Read a => ReadP (Lambda a)
 var = Var <$> (readS_to_P (readsPrec 10))
 

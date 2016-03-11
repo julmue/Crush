@@ -4,13 +4,8 @@ import Lambda.Named
 import Lambda.Nameless
 import Bound
 
--- smart constructor
-lam :: Eq a => a -> Exp a -> Exp a
-lam v b = L (abstract1 v b)
 
-infix 0 !
-(!) :: Eq a => a -> Exp a -> Exp a
-(!) = lam
+
 
 nf :: Exp a -> Exp a
 nf e@V{} = e
