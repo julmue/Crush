@@ -5,10 +5,14 @@
 ### Named Lambda Terms
 
 * Parser: Write a Parser for named terms.
+* syntactic sugar:
+   * 'let in' syntax
+* INFO Container;
 
 ### Unnamed Lambda Terms
 
-* 'let in' syntax
+* syntax: 
+    * 'let in' syntax
 * INFO Container;
 
 ## Repl
