@@ -60,9 +60,11 @@ infixr 6 !
 -- -----------------------------------------------------------------------------
 -- show instance
 instance Show a => Show (Lambda a) where
-    showsPrec _ (Var n) = showString $ show n
+    showsPrec _ (Var n) = showString (show n)
     showsPrec d (Lam n e) = showParen (d>predLam) $
-        showChar '\\' . showString (show n) . showChar '.' . showsPrec predLam e
+        showChar '\\' .
+        showString (show n) .
+        showString "->" . showChar ' ' . showsPrec predLam e
       where
         predLam = 1
     showsPrec d (e1 :@ e2) = showParen (d>predApp) $

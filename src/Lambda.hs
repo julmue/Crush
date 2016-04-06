@@ -14,9 +14,14 @@ module Lambda (
     , lam
     , gLam
     -- evaluation
-    , nf
-    , whnf
+    , normalOrder
+    , callByName
+    , callByValue
+    , normalize
+    , lazy
+    , strict
     , compute
+    , hoistFresh
     -- translation
     , uname
     , name
