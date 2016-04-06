@@ -2,15 +2,12 @@
 
 module Lambda.Evaluation where
 
-import Control.Monad.Reader
-import Data.List ((\\))
-
 import Lambda.Named
 import Lambda.Nameless
 import Lambda.Translation
 
 import Bound
-import Bound.Unwrap
+import Bound.Unwrap (Fresh)
 
 -- -----------------------------------------------------------------------------
 -- computation
@@ -33,4 +30,4 @@ whnf (f :$ a) = case whnf f of
 
 
 compute :: Eq a => Lambda (Fresh a) -> Lambda (Fresh a)
-compute = nm . nf . unm
+compute = name . nf . uname

@@ -63,9 +63,8 @@ mapNL :: (n -> m) -> (a -> b) -> NL n a -> NL m b
 mapNL f g e = mapAlpha f . fmap g $ e
 
 -- smart constructor
-lam :: Eq a => a -> (a -> n) -> NL n a -> NL n a
-lam a f e = L (Alpha (f a)) (abstract1 a e)
+lam :: Eq a => a -> NL a a -> NL a a
+lam a e = gLam a id e
 
-infixr 0 !
-(!) :: Eq a => a -> NL a a -> NL a a
-(!) a = lam a id
+gLam :: Eq a => a -> (a -> n) -> NL n a -> NL n a
+gLam a f e = L (Alpha (f a)) (abstract1 a e)

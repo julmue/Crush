@@ -20,6 +20,8 @@ library
   other-modules:       Lambda.Named
                      , Lambda.Nameless
                      , Lambda.Evaluation
+                     , Lambda.Translation
+                     , Lambda.LambdaLib
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
                      , bound

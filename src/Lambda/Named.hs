@@ -10,6 +10,7 @@ module Lambda.Named (
       Lambda (Var,Lam,(:@))
     , lambda
     , gLambda
+    , (!)
     ) where
 
 import Prelude hiding (abs)
@@ -47,6 +48,12 @@ gLambda ::
 gLambda v _ _ (Var n) = v n
 gLambda v a l (fun :@ arg) = a (gLambda v a l fun) (gLambda v a l arg)
 gLambda v a l (Lam n body) = l n (gLambda v a l body)
+
+-- constructor
+infixr 6 !
+
+(!) :: a -> Lambda a -> Lambda a
+(!) = Lam
 
 -- -----------------------------------------------------------------------------
 -- show instance

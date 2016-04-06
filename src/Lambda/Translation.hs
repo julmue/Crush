@@ -2,16 +2,15 @@ module Lambda.Translation where
 
 import Lambda.Named
 import Lambda.Nameless
--- import Bound
-import Bound.Unwrap
+import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 
-unm :: Eq a => Lambda a -> NL a a
-unm = lambda V (:$) (\x e -> x ! e)
+uname :: Eq a => Lambda a -> NL a a
+uname = lambda V (:$) (\x e -> lam x e)
 
-nm :: Eq a => NL (Fresh a) (Fresh a) -> Lambda (Fresh a)
-nm (V n) = Var n
-nm (fun :$ arg) = nm fun :@ nm arg
-nm l = runUnwrap (f l)
+name :: Eq a => NL (Fresh a) (Fresh a) -> Lambda (Fresh a)
+name (V n) = Var n
+name (fun :$ arg) = name fun :@ name arg
+name l = runUnwrap (f l)
   where
     f :: NL (Fresh a) (Fresh a) -> Unwrap (Lambda (Fresh a))
     f (V n) = return (Var n)
