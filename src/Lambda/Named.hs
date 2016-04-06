@@ -8,8 +8,8 @@
 
 module Lambda.Named (
       Lambda (Var,Lam,(:@))
-    , foldL
-    , gfoldL
+    , lambda
+    , gLambda
     ) where
 
 import Prelude hiding (abs)
@@ -35,29 +35,34 @@ data Lambda a
     deriving (Functor, Foldable, Traversable)
 
 -- folds
-foldL :: (a -> b) -> (b -> b -> b) -> (a -> b -> b) -> Lambda a -> b
-foldL v _ _ (Var n) = v n
-foldL v a l (fun :@ arg) = a (foldL v a l fun) (foldL v a l arg)
-foldL v a l (Lam n body) = l n (foldL v a l body)
+lambda :: (a -> b) -> (b -> b -> b) -> (a -> b -> b) -> Lambda a -> b
+lambda v _ _ (Var n) = v n
+lambda v a l (fun :@ arg) = a (lambda v a l fun) (lambda v a l arg)
+lambda v a l (Lam n body) = l n (lambda v a l body)
 
-gfoldL ::
+gLambda ::
     (m a -> n b) -> (n b -> n b -> n b) ->
     (m a -> n b -> n b) ->
     Lambda (m a) -> n b
-gfoldL v _ _ (Var n) = v n
-gfoldL v a l (fun :@ arg) = a (gfoldL v a l fun) (gfoldL v a l arg)
-gfoldL v a l (Lam n body) = l n (gfoldL v a l body)
+gLambda v _ _ (Var n) = v n
+gLambda v a l (fun :@ arg) = a (gLambda v a l fun) (gLambda v a l arg)
+gLambda v a l (Lam n body) = l n (gLambda v a l body)
 
-
+-- -----------------------------------------------------------------------------
+-- show instance
 instance Show a => Show (Lambda a) where
     showsPrec _ (Var n) = showString $ show n
     showsPrec d (Lam n e) = showParen (d>predLam) $
-        showChar '\\' . showString (show n) . showChar '.' . showsPrec predLam e where
+        showChar '\\' . showString (show n) . showChar '.' . showsPrec predLam e
+      where
         predLam = 1
     showsPrec d (e1 :@ e2) = showParen (d>predApp) $
-        showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2 where
+        showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2
+      where
         predApp = 2
 
+-- -----------------------------------------------------------------------------
+-- read instance
 spaces :: ReadP String
 spaces = many1 (satisfy isSpace)
 parens :: ReadP a -> ReadP a
@@ -81,6 +86,9 @@ expr = app <++ abs <++ atom
 
 instance Read a => Read (Lambda a) where
     readsPrec _ = readP_to_S expr
+
+-- -----------------------------------------------------------------------------
+-- random data generation
 
 genLambda :: Arbitrary a => Int -> Gen (Lambda a)
 genLambda depth

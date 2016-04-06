@@ -1,23 +1,36 @@
+{-# Language FlexibleInstances #-}
+
 module Lambda.Evaluation where
+
+import Control.Monad.Reader
+import Data.List ((\\))
 
 import Lambda.Named
 import Lambda.Nameless
+import Lambda.Translation
+
 import Bound
+import Bound.Unwrap
 
-unname :: Eq a => Lambda a -> NLL a
-unname = foldL V (:$) lam
+-- -----------------------------------------------------------------------------
+-- computation
 
-
-nf :: NLL a -> NLL a
+-- normalform
+nf :: NL n a -> NL n a
 nf e@V{} = e
-nf e@(L b) = L . toScope . nf . fromScope $ b
+nf e@(L n b) = L n . toScope . nf . fromScope $ b
 nf e@(f :$ a) = case whnf f of
-    L b -> nf (instantiate1 a b)
+    L _ b -> nf (instantiate1 a b)
     f' -> nf f' :$ nf a
 
-whnf :: NLL a -> NLL a
+-- weak head normalform
+whnf :: NL n a -> NL n a
 whnf e@V{} = e
 whnf e@L{} = e
 whnf (f :$ a) = case whnf f of
-    L b -> whnf (instantiate1 a b)
+    L _ b -> whnf (instantiate1 a b)
     f' -> f' :$ a
+
+
+compute :: Eq a => Lambda (Fresh a) -> Lambda (Fresh a)
+compute = nm . nf . unm

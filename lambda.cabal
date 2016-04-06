@@ -20,11 +20,13 @@ library
   other-modules:       Lambda.Named
                      , Lambda.Nameless
                      , Lambda.Evaluation
-                     , Lambda.Class
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
                      , bound
                      , prelude-extras
+                     , mtl
+                     , monad-gen
+                     , bound-gen
   default-language:    Haskell2010
 
 executable lambda
