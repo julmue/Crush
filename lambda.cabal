@@ -18,6 +18,7 @@ library
   exposed-modules:     Lambda
                      , Lambda
   other-modules:       Lambda.Named
+                     , Lambda.Named.Parser
                      , Lambda.Nameless
                      , Lambda.Evaluation
                      , Lambda.Translation

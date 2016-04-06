@@ -6,6 +6,8 @@ module Lambda.LambdaLib
       s
     , k
     , i
+    , o       -- should be 'omega'
+    , omega   -- should be 'Omega'
     -- booleans
     , tru
     , fls
@@ -24,6 +26,10 @@ module Lambda.LambdaLib
     , pair
     , fst
     , snd
+    -- lists
+    , cons
+    , head
+    , tail
     -- y-combinator (least fixpoint)
     , fix
     ) where
@@ -32,8 +38,15 @@ import Lambda.Named
 
 -- s k i combinators
 s = "f" ! "g" ! "x" ! Var "f" :@ Var "x" :@ (Var "g" :@ Var "x")
+
 k = "x" ! "y" ! Var "x"
+
 i = "x" ! Var "x"
+
+o = "x" ! Var "x" :@ Var "x"
+
+omega = o :@ o
+
 
 -- logic and predicates
 tru = "t" ! "f" ! Var "t"
@@ -68,6 +81,14 @@ pair = "f" ! "s" ! "b" ! Var "b" :@ Var "f" :@ Var "s"
 fst = "p" ! Var "p" :@ tru
 
 snd = "p" ! Var "p" :@ fls
+
+-- lists
+cons = "a" ! "b" ! "f" ! Var "f" :@ Var "a" :@ Var "b"
+
+head = "c" ! Var "c" :@ ("a" ! "b" ! Var "a")
+
+tail = "c" ! Var "c" :@ ("a" ! "b" ! Var "b")
+
 
 -- fixpoint combinator
 fix = "f" !

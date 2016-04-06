@@ -4,12 +4,14 @@
 {-# LANGUAGE RankNTypes #-}
 
 module Lambda.Nameless (
-      NL (V, (:$), L)
-    , Alpha (Alpha)
+      Alpha (Alpha)
     , runAlpha
+    , NL (V, (:$), L)
+--    , bound
+--    , free
     , nl
-    , mapAlpha
     , mapNL
+    , mapAlpha
     , lam
     , gLam
 ) where

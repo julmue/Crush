@@ -22,7 +22,7 @@ import Lambda.Translation
 -- -----------------------------------------------------------------------------
 -- computation
 
--- normalform
+-- normal form
 normalOrder :: NL n a -> NL n a
 normalOrder e@V{} = e
 normalOrder e@(L n b) = L n . toScope . normalOrder . fromScope $ b
@@ -30,7 +30,7 @@ normalOrder e@(f :$ a) = case normalOrder f of
     L _ b -> normalOrder (instantiate1 a b)
     f' -> normalOrder f' :$ normalOrder a
 
--- weak head normalform
+-- weak head normal form
 callByName :: NL n a -> NL n a
 callByName var@V{} = var
 callByName val@L{} = val
@@ -38,6 +38,7 @@ callByName (fun :$ arg) = case callByName fun of
     L _ body -> callByName (instantiate1 arg body)
     term -> term :$ arg
 
+-- head normal form
 callByValue :: NL n a -> NL n a
 callByValue var@V{} = var
 callByValue val@L{} = val

@@ -9,6 +9,8 @@
 module Lambda.Named
     (
       Lambda (Var,Lam,(:@))
+--    , bound
+--    , free
     , lambda
     , gLambda
     , (!)
