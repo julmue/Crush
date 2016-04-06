@@ -3,12 +3,22 @@
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE RankNTypes #-}
 
-module Lambda.Nameless where
+module Lambda.Nameless (
+      NL (V, (:$), L)
+    , Alpha (Alpha)
+    , runAlpha
+    , nl
+    , mapAlpha
+    , mapNL
+    , lam
+    , gLam
+) where
 
 import Control.Monad (ap)
-import Prelude.Extras
+
 import Bound
 import Bound.Scope
+import Prelude.Extras
 
 -- -----------------------------------------------------------------------------
 -- nameless representation

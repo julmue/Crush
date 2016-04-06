@@ -6,21 +6,23 @@
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
 
-module Lambda.Named (
+module Lambda.Named
+    (
       Lambda (Var,Lam,(:@))
     , lambda
     , gLambda
     , (!)
     ) where
 
-import Prelude hiding (abs)
 import Data.Char
-import Text.ParserCombinators.ReadP
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
 import Data.Foldable
 import Data.Traversable
 #endif
+import Prelude hiding (abs)
+import Text.ParserCombinators.ReadP
+
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
 

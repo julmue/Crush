@@ -1,8 +1,13 @@
-module Lambda.Translation where
+module Lambda.Translation
+    (
+      uname
+    , name
+    ) where
+
+import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 
 import Lambda.Named
 import Lambda.Nameless
-import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 
 uname :: Eq a => Lambda a -> NL a a
 uname = lambda V (:$) (\x e -> lam x e)
