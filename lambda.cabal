@@ -39,6 +39,7 @@ executable lambda
   build-depends:       base
                      , lambda
                      , bound
+                     , bound-gen
   default-language:    Haskell2010
 
 test-suite lambda1-test
