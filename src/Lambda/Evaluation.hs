@@ -33,11 +33,14 @@ normalOrder (L n s) = L n . toScope . normalOrder . fromScope $ s
 normalOrder (f :$ a) = case normalOrder f of
     L _ b -> normalOrder (instantiate1 a b)
     f' -> normalOrder f' :$ normalOrder a
-normalOrder (LRC ns defScopes scope) = normalOrder (instDefs scope)
-  where
-    defs = map instDefs defScopes :: [NL n a]
-    instDefs = instantiate lookup :: Scope Int (NL n) a -> NL n a
-    lookup = (defs !!) :: Int -> NL n a
+normalOrder (LRC _ bs b) = normalOrder (inst b)
+  where es = map inst bs
+        inst = instantiate (es !!)
+-- normalOrder (LRC ns defScopes scope) = normalOrder (instDefs scope)
+--   where
+--     defs = map instDefs defScopes :: [NL n a]
+--     instDefs = instantiate lookup :: Scope Int (NL n) a -> NL n a
+--     lookup = (defs !!) :: Int -> NL n a
 
 -- weak head normal form
 callByName :: forall n a . NL n a -> NL n a

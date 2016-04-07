@@ -13,6 +13,7 @@ module Lambda (
     , mapNL
     , lam
     , gLam
+    , let_
     -- evaluation
     , normalOrder
     , callByName

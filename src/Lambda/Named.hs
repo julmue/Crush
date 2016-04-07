@@ -1,5 +1,5 @@
-{-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
+-- {-# OPTIONS_GHC -Wall #-}
+-- {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
