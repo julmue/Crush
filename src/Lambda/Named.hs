@@ -8,11 +8,11 @@
 
 module Lambda.Named
     (
-      Lambda (Var,Lam,(:@))
+      Lambda (Var,(:@),Lam,Letrec)
 --    , bound
 --    , free
     , lambda
---    , gLambda
+    , gLambda
     , (!)
     ) where
 
@@ -86,16 +86,23 @@ infixr 6 !
 -- show instance
 instance Show a => Show (Lambda a) where
     showsPrec _ (Var n) = showString (show n)
+    showsPrec d (e1 :@ e2) = showParen (d>predApp) $
+        showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2
+      where
+        predApp = 9
     showsPrec d (Lam n e) = showParen (d>predLam) $
         showChar '\\' .
         showString (show n) .
         showString "->" . showChar ' ' . showsPrec predLam e
       where
-        predLam = 1
-    showsPrec d (e1 :@ e2) = showParen (d>predApp) $
-        showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2
-      where
-        predApp = 2
+        predLam = 6
+-- I do not suppose this is right ...
+    showsPrec d (Letrec defs expr) = showParen False $
+        showString "letrec " .
+        showString (show defs) .
+        showString "in " .
+        showsPrec 9 expr
+
 
 -- -----------------------------------------------------------------------------
 -- read instance

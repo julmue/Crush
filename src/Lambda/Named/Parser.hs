@@ -1,7 +1,24 @@
 module Lambda.Named.Parser
     (
-      parser
+      lambda
+    , definitions
     ) where
+
+{-
+=== Grammar
+
+<expr> = <variable>
+       | <expr> <expr>
+       | \<var>.<expr>
+       | letrec { <var> = <expr> ;
+                  ...
+                  <var> = <expr> }
+          in <expr>
+       | (<expr>)
+
+Todo: constants (Integers, Chars, Strings, ...)
+
+-}
 
 import Control.Applicative
 
@@ -17,13 +34,23 @@ import Lambda.Named (Lambda(..))
 lexer :: T.TokenParser ()
 lexer = T.makeTokenParser style
   where
-    style = emptyDef {
-        T.reservedOpNames = [".","\\",";"],
-        T.commentLine = "#"
-    }
+    keys = ["letrec", "in"]
+    ops = [".", "\\", ";","="]
+    style = emptyDef
+        { T.reservedNames = keys
+        , T.reservedOpNames = ops
+        , T.identStart = P.alphaNum <|> P.char '_'
+        , T.identLetter = P.alphaNum <|> P.char '_'
+        , T.commentLine = "--"
+        , T.commentStart = "{-"
+        , T.commentEnd  = "-}"
+        }
 
 semi :: S.Parser String
 semi = T.semi lexer
+
+braces :: S.Parser a -> S.Parser a
+braces = T.braces lexer
 
 parens :: S.Parser a -> S.Parser a
 parens = T.parens lexer
@@ -44,23 +71,41 @@ variable = Var <$> identifier
 atom :: S.Parser (Lambda String)
 atom = variable <|> parens expr
 
-lambda :: S.Parser (Lambda String)
-lambda = do
+app :: S.Parser (Lambda String)
+app = atom `P.chainl1` (pure (:@))
+
+lam :: S.Parser (Lambda String)
+lam = do
     reservedOp "\\"
     n <- identifier
     -- "." this is a hack because strange parsec behaviour with reservedOp "."
     P.char '.'
     P.spaces
+    --
     e <- expr
     return (Lam n e)
 
-app :: S.Parser (Lambda String)
-app = atom `P.chainl1` (pure (:@))
+letrec :: S.Parser (Lambda String)
+letrec = do
+    reserved "letrec"
+    defs <- definitions
+    reserved "in"
+    term <- expr
+    return (Letrec defs term)
+
+definition :: S.Parser (String, Lambda String)
+definition = do
+    n <- identifier
+    reservedOp "="
+    term <- expr
+    return (n, term)
+
+definitions :: S.Parser [(String, Lambda String)]
+definitions = braces (definition `P.sepBy` semi)
 
 expr :: S.Parser (Lambda String)
-expr = lambda <|> app <|> atom
+expr = letrec <|> lam <|> app <|> atom
 
-parser s = P.parse expr "LambdaParser"
+lambda :: String -> Either P.ParseError (Lambda String)
+lambda = P.parse expr "LambdaParser"
 
--- parser :: S.Parser [Lambda String]
--- parser = expr `P.sepBy` semi

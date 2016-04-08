@@ -10,7 +10,7 @@ import Lambda.Named
 import Lambda.Nameless
 
 uname :: Eq a => Lambda a -> NL a a
-uname = lambda V (:$) (\x e -> lam x e)
+uname = lambda V (:$) (\x e -> lam x e) undefined --attention
 
 name :: Eq a => NL (Fresh a) (Fresh a) -> Lambda (Fresh a)
 name (V n) = Var n

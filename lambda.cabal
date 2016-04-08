@@ -17,8 +17,8 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lambda
                      , Lambda.LambdaLib
-  other-modules:       Lambda.Named
                      , Lambda.Named.Parser
+  other-modules:       Lambda.Named
                      , Lambda.Nameless
                      , Lambda.Evaluation
                      , Lambda.Translation

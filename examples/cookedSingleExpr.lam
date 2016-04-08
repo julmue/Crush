@@ -1,0 +1,54 @@
+{-# LANGUAGE WarnOpenExpr #-}
+{-# LANGUAGE EvalNormalOrder #-}
+
+-- functions
+main = letrec {
+      id = \x.x
+    ; const = \x.\y.x
+    ; fix = \g.(\x.g (x x)) (\x.g (x x))
+      -- logic
+    ; tru = \t.\f.t
+    ; fls = \t.\f.f
+    ; not = \p.\t.\f.p f t
+    ; and = \p.\q.p q p
+    ; or = \p.\q.p p q
+    ; imp = \p.\q.or (not p) q
+    ; iff = \p.\q.and (imp p q) (imp q p)
+    ; eqbool = iff
+    ; if = \p.\t.\f.p t f
+      -- arithmetic
+    ; zro = \f.\x.x
+    ; iszro = \n.n (const fls) tru
+    ; scc = \n.\f.\x.f (n f x)
+    ; prd = \n.\f.\x.n (\g.\h.h (g f)) (\u.x) (\u.u)
+    ; add = \x.\y.x scc y
+    ; sub = \m.\n. n pred m
+    ; mul = \x.\y.x (add y) zro
+    ; pow = \b.\e.e b
+    ; fac = \x. if (iszro x) one (mul x (fac (prd x)))
+    ; eqnat = \x.\y.
+        if (and (iszro x) (iszro y))
+            tru
+            (if (or (iszro x) (iszro y))
+                fls
+                (eqnat (pred x) (pred y))
+    ; sumto = \x.x zro (\n. add x (sumto n)) 
+      -- various numbers
+    ; one = scc zro
+    ; two = scc one 
+    ; three = scc two
+    ; n5 = add two three
+    ; n6 = add three three
+    ; n17 = add n6 (add n6 n5)
+    ; n37 = scc (mul n6 n6)
+    ; n703 = sumto n37
+    ; n720 = fac n6
+] in eqnat n720 (n703 n17)
+
+
+
+
+
+
+
+
