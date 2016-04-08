@@ -1,6 +1,7 @@
 module Lambda.Named.Parser
     (
       lambda
+    , definition
     , definitions
     ) where
 
@@ -28,7 +29,7 @@ import qualified Text.Parsec.String as S
 import Text.Parsec.Language as L
 import qualified Text.Parsec.Token as T
 
-import Lambda.Named (Lambda(..))
+import Lambda.Named (Expr(..))
 
 -- lexer
 lexer :: T.TokenParser ()
@@ -65,16 +66,16 @@ identifier :: S.Parser String
 identifier = T.identifier lexer
 
 -- parser
-variable :: S.Parser (Lambda String)
+variable :: S.Parser (Expr String)
 variable = Var <$> identifier
 
-atom :: S.Parser (Lambda String)
+atom :: S.Parser (Expr String)
 atom = variable <|> parens expr
 
-app :: S.Parser (Lambda String)
+app :: S.Parser (Expr String)
 app = atom `P.chainl1` (pure (:@))
 
-lam :: S.Parser (Lambda String)
+lam :: S.Parser (Expr String)
 lam = do
     reservedOp "\\"
     n <- identifier
@@ -85,27 +86,33 @@ lam = do
     e <- expr
     return (Lam n e)
 
-letrec :: S.Parser (Lambda String)
+letrec :: S.Parser (Expr String)
 letrec = do
     reserved "letrec"
-    defs <- definitions
+    ds <- defs
     reserved "in"
     term <- expr
-    return (Letrec defs term)
+    return (Letrec ds term)
 
-definition :: S.Parser (String, Lambda String)
-definition = do
+def :: S.Parser (String, Expr String)
+def = do
     n <- identifier
     reservedOp "="
     term <- expr
     return (n, term)
 
-definitions :: S.Parser [(String, Lambda String)]
-definitions = braces (definition `P.sepBy` semi)
+defs :: S.Parser [(String, Expr String)]
+defs = braces (def `P.sepBy` semi)
 
-expr :: S.Parser (Lambda String)
+expr :: S.Parser (Expr String)
 expr = letrec <|> lam <|> app <|> atom
 
-lambda :: String -> Either P.ParseError (Lambda String)
-lambda = P.parse expr "LambdaParser"
+lambda :: String -> Either P.ParseError (Expr String)
+lambda = P.parse expr "ExprParser"
+
+definition :: String -> Either P.ParseError (String, Expr String)
+definition = P.parse def "ExprParser"
+
+definitions :: String -> Either P.ParseError [(String, Expr String)]
+definitions = P.parse defs "ExprParser"
 

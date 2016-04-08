@@ -1,8 +1,8 @@
 module Lambda (
     -- named lambda terms
-      Lambda (Var,Lam,(:@))
-    , lambda
-    , gLambda
+      Expr (Var,Lam,(:@))
+    , expr
+    , gExpr
     , (!)
     -- nameless lambda terms
     , NL (V, (:$), L)

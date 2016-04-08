@@ -8,11 +8,11 @@
 
 module Lambda.Named
     (
-      Lambda (Var,(:@),Lam,Letrec)
+      Expr (Var,(:@),Lam,Letrec)
 --    , bound
 --    , free
-    , lambda
-    , gLambda
+    , expr
+    , gExpr
     , (!)
     ) where
 
@@ -35,56 +35,56 @@ infixl 9 :@
 
 -- what happens?
 -- 1. the file gets parsed ...
---    we have a list of [(a,Lambda a)]
+--    we have a list of [(a,Expr a)]
 -- 2. these get abstracted
---    [Scope Int (Lambda a) a)]
+--    [Scope Int (Expr a) a)]
 -- 3. these get put in a Vector
 
 
-data Lambda a
+data Expr a
     = Var a
-    | (Lambda a) :@ (Lambda a)
-    | Lam a (Lambda a)
-    | Letrec [(a, Lambda a)] (Lambda a)
+    | (Expr a) :@ (Expr a)
+    | Lam a (Expr a)
+    | Letrec [(a, Expr a)] (Expr a)
     deriving (Functor, Foldable, Traversable)
 
 -- folds
-lambda ::
+expr ::
        (a -> n a)
     -> (n a -> n a -> n a)
     -> (a -> n a -> n a)
     -> ([(a, n a)] -> n a -> n a)
-    -> Lambda a -> n a
-lambda v _ _ _ (Var n) = v n
-lambda v a l ltc (fun :@ arg) = a (lambda v a l ltc fun) (lambda v a l ltc arg)
-lambda v a l ltc (Lam n body) = l n (lambda v a l ltc body)
-lambda v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
+    -> Expr a -> n a
+expr v _ _ _ (Var n) = v n
+expr v a l ltc (fun :@ arg) = a (expr v a l ltc fun) (expr v a l ltc arg)
+expr v a l ltc (Lam n body) = l n (expr v a l ltc body)
+expr v a l ltc (Letrec defs term) = ltc ((fmap . fmap) g defs) (g term)
   where
-    g = lambda v a l ltc
+    g = expr v a l ltc
 
-gLambda ::
+gExpr ::
        (m a -> n b)
     -> (n b -> n b -> n b)
     -> (m a -> n b -> n b)
     -> ([(m a, n b)] -> n b -> n b)
-    -> Lambda (m a) -> n b
-gLambda v _ _ _ (Var n) = v n
-gLambda v a l ltc (fun :@ arg) = a (gLambda v a l ltc fun) (gLambda v a l ltc arg)
-gLambda v a l ltc (Lam n body) = l n (gLambda v a l ltc body)
-gLambda v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
+    -> Expr (m a) -> n b
+gExpr v _ _ _ (Var n) = v n
+gExpr v a l ltc (fun :@ arg) = a (gExpr v a l ltc fun) (gExpr v a l ltc arg)
+gExpr v a l ltc (Lam n body) = l n (gExpr v a l ltc body)
+gExpr v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
   where
-    g = gLambda v a l ltc
+    g = gExpr v a l ltc
 
 
 -- constructor
 infixr 6 !
 
-(!) :: a -> Lambda a -> Lambda a
+(!) :: a -> Expr a -> Expr a
 (!) = Lam
 
 -- -----------------------------------------------------------------------------
 -- show instance
-instance Show a => Show (Lambda a) where
+instance Show a => Show (Expr a) where
     showsPrec _ (Var n) = showString (show n)
     showsPrec d (e1 :@ e2) = showParen (d>predApp) $
         showsPrec predApp e1 . showChar ' ' . showsPrec (succ predApp) e2
@@ -106,45 +106,45 @@ instance Show a => Show (Lambda a) where
 
 -- -----------------------------------------------------------------------------
 -- read instance
-spaces :: ReadP String
-spaces = many1 (satisfy isSpace)
-parens :: ReadP a -> ReadP a
-parens = between (char '(') (char ')')
-var :: Read a => ReadP (Lambda a)
-var = Var <$> (readS_to_P (readsPrec 10))
-
-atom :: Read a => ReadP (Lambda a)
-atom = parens expr <++ var
-
-app :: Read a => ReadP (Lambda a)
-app = atom `chainl1` (spaces *> pure (:@))
-
-abs :: Read a => ReadP (Lambda a)
-abs = Lam <$ lam <*> (readS_to_P (readsPrec 10)) <* dot <*> expr where
-    lam = char '\\'
-    dot = char '.'
-
-expr :: Read a => ReadP (Lambda a)
-expr = app <++ abs <++ atom
-
-instance Read a => Read (Lambda a) where
-    readsPrec _ = readP_to_S expr
+-- spaces :: ReadP String
+-- spaces = many1 (satisfy isSpace)
+-- parens :: ReadP a -> ReadP a
+-- parens = between (char '(') (char ')')
+-- var :: Read a => ReadP (Expr a)
+-- var = Var <$> (readS_to_P (readsPrec 10))
+--
+-- atom :: Read a => ReadP (Expr a)
+-- atom = parens expr <++ var
+--
+-- app :: Read a => ReadP (Expr a)
+-- app = atom `chainl1` (spaces *> pure (:@))
+--
+-- abs :: Read a => ReadP (Expr a)
+-- abs = Lam <$ lam <*> (readS_to_P (readsPrec 10)) <* dot <*> expr where
+--     lam = char '\\'
+--     dot = char '.'
+--
+-- expr :: Read a => ReadP (Expr a)
+-- expr = app <++ abs <++ atom
+--
+-- instance Read a => Read (Expr a) where
+--     readsPrec _ = readP_to_S expr
 
 -- -----------------------------------------------------------------------------
 -- random data generation
 
-genLambda :: Arbitrary a => Int -> Gen (Lambda a)
-genLambda depth
+genExpr :: Arbitrary a => Int -> Gen (Expr a)
+genExpr depth
     | depth <= 1 = Var <$> arbitrary
     | otherwise = do
         depth1 <- genDepth
         depth2 <- genDepth
-        oneof [ genLambda 1
-              , (:@) <$> genLambda depth1 <*> genLambda depth2
-              , Lam <$> arbitrary <*> genLambda depth1
+        oneof [ genExpr 1
+              , (:@) <$> genExpr depth1 <*> genExpr depth2
+              , Lam <$> arbitrary <*> genExpr depth1
               ]
   where
     genDepth = elements [1 .. pred depth]
 
-instance Arbitrary a => Arbitrary (Lambda a) where
-    arbitrary = sized genLambda
+instance Arbitrary a => Arbitrary (Expr a) where
+    arbitrary = sized genExpr

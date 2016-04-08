@@ -1,18 +1,25 @@
 module Main where
 
+import Control.Monad.Except
+import System.IO
 import Prelude hiding (head,tail,fst,snd,not,and,or)
 
 import Bound.Scope
 import qualified Bound.Unwrap as BU
 
-
 import Lambda as L
 import Lambda.Named.Parser as PL
+
+import qualified Text.Parsec as P
 
 main :: IO ()
 main = putStrLn . show $ "hello"
 
-infixr 6 |>
+data LambdaError =
+      Parser P.ParseError
 
-(|>) :: Eq a => a -> NL a a -> NL a a
-(|>) = lam
+showError :: LambdaError -> String
+showError (Parser err) = show err
+
+
+testFile = readFile "./examples/cookedSingleExpr.lam"

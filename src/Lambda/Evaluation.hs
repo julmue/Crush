@@ -67,20 +67,20 @@ callByValue (LRC ns defScopes scope) = callByValue (instDefs scope)
     instDefs = instantiate lookup :: Scope Int (NL n) a -> NL n a
     lookup = (defs !!) :: Int -> NL n a
 
-hoistFresh :: Lambda a -> Lambda (BU.Fresh a)
+hoistFresh :: Expr a -> Expr (BU.Fresh a)
 hoistFresh = fmap BU.name
 
 compute :: Eq a =>
     (forall n a . NL n a -> NL n a)
-    -> Lambda (BU.Fresh a)
-    -> Lambda (BU.Fresh a)
+    -> Expr (BU.Fresh a)
+    -> Expr (BU.Fresh a)
 compute f = name . f . uname
 
-normalize :: Eq a => Lambda (BU.Fresh a) -> Lambda (BU.Fresh a)
+normalize :: Eq a => Expr (BU.Fresh a) -> Expr (BU.Fresh a)
 normalize = compute normalOrder
 
-lazy :: Eq a => Lambda (BU.Fresh a) -> Lambda (BU.Fresh a)
+lazy :: Eq a => Expr (BU.Fresh a) -> Expr (BU.Fresh a)
 lazy = compute callByName
 
-strict :: Eq a => Lambda (BU.Fresh a) -> Lambda (BU.Fresh a)
+strict :: Eq a => Expr (BU.Fresh a) -> Expr (BU.Fresh a)
 strict = compute callByValue

@@ -1,7 +1,3 @@
-{-# LANGUAGE WarnOpenExpr #-}
-{-# LANGUAGE EvalNormalOrder #-}
-
--- functions
 main = letrec {
       id = \x.x
     ; const = \x.\y.x
@@ -31,7 +27,7 @@ main = letrec {
             tru
             (if (or (iszro x) (iszro y))
                 fls
-                (eqnat (pred x) (pred y))
+                (eqnat (pred x) (pred y)))
     ; sumto = \x.x zro (\n. add x (sumto n)) 
       -- various numbers
     ; one = scc zro
@@ -43,7 +39,7 @@ main = letrec {
     ; n37 = scc (mul n6 n6)
     ; n703 = sumto n37
     ; n720 = fac n6
-] in eqnat n720 (n703 n17)
+} in eqnat n720 (n703 n17)
 
 
 
