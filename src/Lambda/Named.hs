@@ -12,7 +12,7 @@ module Lambda.Named
 --    , bound
 --    , free
     , lambda
-    , gLambda
+--    , gLambda
     , (!)
     ) where
 
@@ -33,25 +33,48 @@ import Test.QuickCheck.Gen
 
 infixl 9 :@
 
+-- what happens?
+-- 1. the file gets parsed ...
+--    we have a list of [(a,Lambda a)]
+-- 2. these get abstracted
+--    [Scope Int (Lambda a) a)]
+-- 3. these get put in a Vector
+
+
 data Lambda a
     = Var a
     | (Lambda a) :@ (Lambda a)
     | Lam a (Lambda a)
+    | Letrec [(a, Lambda a)] (Lambda a)
     deriving (Functor, Foldable, Traversable)
 
 -- folds
-lambda :: (a -> b) -> (b -> b -> b) -> (a -> b -> b) -> Lambda a -> b
-lambda v _ _ (Var n) = v n
-lambda v a l (fun :@ arg) = a (lambda v a l fun) (lambda v a l arg)
-lambda v a l (Lam n body) = l n (lambda v a l body)
+lambda ::
+       (a -> n a)
+    -> (n a -> n a -> n a)
+    -> (a -> n a -> n a)
+    -> ([(a, n a)] -> n a -> n a)
+    -> Lambda a -> n a
+lambda v _ _ _ (Var n) = v n
+lambda v a l ltc (fun :@ arg) = a (lambda v a l ltc fun) (lambda v a l ltc arg)
+lambda v a l ltc (Lam n body) = l n (lambda v a l ltc body)
+lambda v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
+  where
+    g = lambda v a l ltc
 
 gLambda ::
-    (m a -> n b) -> (n b -> n b -> n b) ->
-    (m a -> n b -> n b) ->
-    Lambda (m a) -> n b
-gLambda v _ _ (Var n) = v n
-gLambda v a l (fun :@ arg) = a (gLambda v a l fun) (gLambda v a l arg)
-gLambda v a l (Lam n body) = l n (gLambda v a l body)
+       (m a -> n b)
+    -> (n b -> n b -> n b)
+    -> (m a -> n b -> n b)
+    -> ([(m a, n b)] -> n b -> n b)
+    -> Lambda (m a) -> n b
+gLambda v _ _ _ (Var n) = v n
+gLambda v a l ltc (fun :@ arg) = a (gLambda v a l ltc fun) (gLambda v a l ltc arg)
+gLambda v a l ltc (Lam n body) = l n (gLambda v a l ltc body)
+gLambda v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
+  where
+    g = gLambda v a l ltc
+
 
 -- constructor
 infixr 6 !
