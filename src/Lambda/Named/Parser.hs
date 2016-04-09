@@ -1,8 +1,11 @@
 module Lambda.Named.Parser
     (
-      lambda
+      expression
     , definition
     , definitions
+    , expr
+    , def
+    , defs
     ) where
 
 {-
@@ -107,8 +110,8 @@ defs = braces (def `P.sepBy` semi)
 expr :: S.Parser (Expr String)
 expr = letrec <|> lam <|> app <|> atom
 
-lambda :: String -> Either P.ParseError (Expr String)
-lambda = P.parse expr "ExprParser"
+expression :: String -> Either P.ParseError (Expr String)
+expression = P.parse expr "ExprParser"
 
 definition :: String -> Either P.ParseError (String, Expr String)
 definition = P.parse def "ExprParser"

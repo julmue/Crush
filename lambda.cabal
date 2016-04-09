@@ -42,6 +42,7 @@ executable lambda
                      , bound-gen
                      , mtl
                      , parsec
+                     , strict
   default-language:    Haskell2010
 
 test-suite lambda1-test

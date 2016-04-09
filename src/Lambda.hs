@@ -1,11 +1,11 @@
 module Lambda (
     -- named lambda terms
-      Expr (Var,Lam,(:@))
+      Expr (Var, Lam, (:@), Letrec)
     , expr
     , gExpr
     , (!)
     -- nameless lambda terms
-    , NL (V, (:$), L)
+    , NL (V, (:$), L, LRC)
     , Alpha (Alpha)
     , runAlpha
     , nl
