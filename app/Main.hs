@@ -11,11 +11,12 @@ import System.Environment (getArgs)
 import Bound.Scope
 import qualified Bound.Unwrap as BU
 
-import qualified Lambda as L
-import qualified Lambda.Named.Parser as LParser
-
 import qualified Text.Parsec as Parsec
 import qualified Text.Parsec.String as ParsecString
+
+import qualified Language.Lambda.Syntax.Named.Parser as LParser
+import Language.Lambda.Semantics.Named.Eval (normalOrder)
+import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Letrec))
 
 -- -----------------------------------------------------------------------------
 {- What is a progam at this point?
@@ -57,13 +58,17 @@ runExe fp = do
     s <- IOStrict.readFile fp
     putStrLn . either show show . runProcess . process $ s
 
--- process :: String -> Process (L.Expr String)
+process :: String -> Process (Exp String)
 process s = do
     def@(name, body) <- parse pExe s
     if name /= "main"
         then throwError MissingMain
-        else return . L.normalize . L.hoistFresh $ (L.Letrec [def] (L.Var name))
-
+        else return $ normalOrder defresh (Letrec [def] (Var name))
+  where
+    defresh = show
+    -- this is the only reasonable way to drop the `Fresh a` wrapper
+    -- because `fresh` is not exposed ...
+    -- this has to change ...
 
 testFile = IOStrict.readFile "./examples/cookedSingleExpr.lam"
 
@@ -71,7 +76,7 @@ lmda = do
     ep <- fmap (runProcess . process) testFile
     return $ either undefined id ep
 
-pExe :: ParsecString.Parser (String, L.Expr String)
+pExe :: ParsecString.Parser (String, Exp String)
 pExe = LParser.def
 
 -- -----------------------------------------------------------------------------

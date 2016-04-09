@@ -15,13 +15,13 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lambda
-                     , Lambda.LambdaLib
-                     , Lambda.Named.Parser
-  other-modules:       Lambda.Named
-                     , Lambda.Nameless
-                     , Lambda.Evaluation
-                     , Lambda.Translation
+  exposed-modules:     Language.Lambda.Syntax.Named.Exp
+                     , Language.Lambda.Syntax.Named.Parser
+                     , Language.Lambda.Syntax.Named.Pretty
+                     , Language.Lambda.Syntax.Nameless.Exp
+                     , Language.Lambda.Syntax.Translation
+                     , Language.Lambda.Semantics.Named.Eval
+                     , Language.Lambda.Semantics.Nameless.Eval
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
                      , bound

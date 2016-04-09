@@ -1,4 +1,4 @@
-module Lambda.Named.Parser
+module Language.Lambda.Syntax.Named.Parser
     (
       expression
     , definition
@@ -32,7 +32,7 @@ import qualified Text.Parsec.String as S
 import Text.Parsec.Language as L
 import qualified Text.Parsec.Token as T
 
-import Lambda.Named (Expr(..))
+import Language.Lambda.Syntax.Named.Exp (Exp(..))
 
 -- lexer
 lexer :: T.TokenParser ()
@@ -69,16 +69,16 @@ identifier :: S.Parser String
 identifier = T.identifier lexer
 
 -- parser
-variable :: S.Parser (Expr String)
+variable :: S.Parser (Exp String)
 variable = Var <$> identifier
 
-atom :: S.Parser (Expr String)
+atom :: S.Parser (Exp String)
 atom = variable <|> parens expr
 
-app :: S.Parser (Expr String)
-app = atom `P.chainl1` (pure (:@))
+app :: S.Parser (Exp String)
+app = atom `P.chainl1` (pure App)
 
-lam :: S.Parser (Expr String)
+lam :: S.Parser (Exp String)
 lam = do
     reservedOp "\\"
     n <- identifier
@@ -89,7 +89,7 @@ lam = do
     e <- expr
     return (Lam n e)
 
-letrec :: S.Parser (Expr String)
+letrec :: S.Parser (Exp String)
 letrec = do
     reserved "letrec"
     ds <- defs
@@ -97,25 +97,25 @@ letrec = do
     term <- expr
     return (Letrec ds term)
 
-def :: S.Parser (String, Expr String)
+def :: S.Parser (String, Exp String)
 def = do
     n <- identifier
     reservedOp "="
     term <- expr
     return (n, term)
 
-defs :: S.Parser [(String, Expr String)]
+defs :: S.Parser [(String, Exp String)]
 defs = braces (def `P.sepBy` semi)
 
-expr :: S.Parser (Expr String)
+expr :: S.Parser (Exp String)
 expr = letrec <|> lam <|> app <|> atom
 
-expression :: String -> Either P.ParseError (Expr String)
-expression = P.parse expr "ExprParser"
+expression :: String -> Either P.ParseError (Exp String)
+expression = P.parse expr "ExpParser"
 
-definition :: String -> Either P.ParseError (String, Expr String)
-definition = P.parse def "ExprParser"
+definition :: String -> Either P.ParseError (String, Exp String)
+definition = P.parse def "ExpParser"
 
-definitions :: String -> Either P.ParseError [(String, Expr String)]
-definitions = P.parse defs "ExprParser"
+definitions :: String -> Either P.ParseError [(String, Exp String)]
+definitions = P.parse defs "ExpParser"
 
