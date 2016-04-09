@@ -9,8 +9,9 @@ import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 import Lambda.Named
 import Lambda.Nameless
 
+
 uname :: Eq a => Expr a -> NL a a
-uname = expr V (:$) (\x e -> lam x e) undefined --attention
+uname = expr V (:$) lam let_
 
 name :: Eq a => NL (Fresh a) (Fresh a) -> Expr (Fresh a)
 name (V n) = Var n
