@@ -71,11 +71,15 @@ process s = do
     -- because `fresh` is not exposed ...
     -- this has to change ...
 
+testFile :: IO String
 testFile = IOStrict.readFile "./examples/cookedSingleExpr.lam"
 
-lmda = do
-    ep <- fmap (runProcess . process) testFile
-    return $ either undefined id ep
+test = (snd . either undefined id . runProcess . parse pExe) <$> testFile
+
+testPrint = fmap (LPretty.prettyPrint) test >>= putStrLn
+
+build :: (a, Exp a) -> Exp a
+build (n, e) = Lam  n e
 
 pExe :: ParsecString.Parser (String, Exp String)
 pExe = LParser.def

@@ -30,7 +30,7 @@ library
                      , monad-gen
                      , bound-gen
                      , parsec
-                     , wl-pprint
+                     , pretty
   default-language:    Haskell2010
 
 executable lambda
