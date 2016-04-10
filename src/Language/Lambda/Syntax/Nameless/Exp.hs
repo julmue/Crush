@@ -8,7 +8,7 @@
 module Language.Lambda.Syntax.Nameless.Exp (
       Alpha (Alpha)
     , runAlpha
-    , Exp (Var, App, Lam, Letrec)
+    , Exp (Var, App, Lam, Letrec, fun, arg, alpha, scope, alphas, defs, exp)
 --    , bound
 --    , free
     , fold
@@ -43,9 +43,12 @@ instance Eq n => Eq (Alpha n) where
 
 data Exp n a =
       Var a
-    | App (Exp n a) (Exp n a)
-    | Lam (Alpha n) (Scope () (Exp n) a)
-    | Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
+    | App { fun :: (Exp n a), arg :: (Exp n a) }
+    | Lam { alpha :: (Alpha n), scope :: (Scope () (Exp n) a) }
+    | Letrec { alphas :: (Alpha [n]), -- these can probably go ...
+               defs :: [Scope Int (Exp n) a],
+               exp  :: (Scope Int (Exp n) a)
+             }
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
 
@@ -56,10 +59,10 @@ instance (Read n) => Read1 (Exp n)
 instance Monad (Exp n) where
     return = Var
 --  (>>=) :: Exp n a -> (a -> Exp n b) -> Exp n B
-    (Var a) >>= f = f a
-    (fun `App` arg) >>= f = (fun >>= f) `App` (arg >>= f)
-    (Lam n scope) >>= f = Lam n (scope >>>= f)
-    (Letrec n bs scope) >>= f = Letrec n (map (>>>= f) bs) (scope >>>= f)
+    (Var a) >>= g = g a
+    (f `App` a) >>= g = (f >>= g) `App` (a >>= g)
+    (Lam n s) >>= g = Lam n (s >>>= g)
+    (Letrec n ds e) >>= g = Letrec n (map (>>>= g) ds) (e >>>= g)
 
 instance Applicative (Exp n) where
     pure = Var
@@ -72,13 +75,13 @@ fold :: forall n b f .
     -> (forall a . Alpha [n] -> [Scope Int f a] -> (Scope Int f a) -> f a)
     -> (Exp n) b -> f b
 fold v _ _ _ (Var n) = v n
-fold v a l lrc (fun `App` arg) = a (fold v a l lrc fun) (fold v a l lrc arg)
-fold v a l lrc (Lam alpha scope) = l alpha hScope
-  where hScope = (hoistScope (fold v a l lrc ) scope)
-fold v a l lrc (Letrec alphas scopes scope) = lrc alphas hScopes hScope
+fold v a l lrc (fun_ `App` arg_) = a (fold v a l lrc fun_) (fold v a l lrc arg_)
+fold v a l lrc (Lam alpha_ scope_) = l alpha_ hScope
+  where hScope = (hoistScope (fold v a l lrc ) scope_)
+fold v a l lrc (Letrec alphas_ defs_ exp_) = lrc alphas_ hDefs hExp
   where
-    hScopes = hoistScope (fold v a l lrc) <$> scopes
-    hScope = hoistScope (fold v a l lrc) scope
+    hDefs = hoistScope (fold v a l lrc) <$> defs_
+    hExp = hoistScope (fold v a l lrc) exp_
 
 mapAlpha :: (n -> m) -> (Exp n) a -> (Exp m) a
 mapAlpha f = fold Var App l lrc
@@ -110,9 +113,9 @@ gLam a f e = Lam (Alpha (f a)) (abstract1 a e)
 -- | a smart constructor for let bindings
 letrec :: Eq a => [(a, Exp a a)] -> Exp a a -> Exp a a
 letrec [] b = b
-letrec defs expr = Letrec (Alpha names) (map abstr bodies) (abstr expr)
+letrec ds e = Letrec (Alpha names) (map abstr bodies) (abstr e)
    where
      abstr = abstract (`elemIndex` names)
-     names = map fst defs
-     bodies = map snd defs
+     names = map fst ds
+     bodies = map snd ds
 

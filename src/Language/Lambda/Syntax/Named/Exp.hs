@@ -8,7 +8,7 @@
 
 module Language.Lambda.Syntax.Named.Exp
     (
-      Exp (Var,App,Lam,Letrec)
+      Exp (Var,App,Lam,Letrec, fun, arg, param, body, defs, exp )
 --    , bound
 --    , free
     , fold
@@ -34,9 +34,9 @@ import Test.QuickCheck.Gen
 
 data Exp a
     = Var a
-    | App (Exp a) (Exp a)
-    | Lam a (Exp a)
-    | Letrec [(a, Exp a)] (Exp a)
+    | App { fun :: (Exp a), arg :: (Exp a) }
+    | Lam { param :: a, body :: (Exp a) }
+    | Letrec { defs :: [(a, Exp a)], exp :: (Exp a) }
     deriving (Read, Show, Functor, Foldable, Traversable)
 
 -- folds

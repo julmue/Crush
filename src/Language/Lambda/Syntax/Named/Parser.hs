@@ -32,7 +32,7 @@ import qualified Text.Parsec.String as S
 import Text.Parsec.Language as L
 import qualified Text.Parsec.Token as T
 
-import Language.Lambda.Syntax.Named.Exp (Exp(..))
+import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Letrec))
 
 -- lexer
 lexer :: T.TokenParser ()
