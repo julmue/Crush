@@ -14,15 +14,15 @@ identifier = text . tail . init . show
 
 prettyP :: Show a => Int -> Exp a -> Doc
 prettyP _ (Var a) = identifier $ a
-prettyP d (fun `App` arg) = maybeParens (d >= aPrec) $
+prettyP d (fun `App` arg) = maybeParens (d > aPrec) $
     prettyP aPrec fun <> space <> prettyP (succ aPrec) arg
   where
     aPrec = 9
-prettyP d (Lam name body) = maybeParens (d >= lPrec) $
+prettyP d (Lam name body) = maybeParens (d > lPrec) $
     text "\\" <> identifier name <> text "." <> prettyP lPrec body
   where
     lPrec = 6
-prettyP d (Letrec defs term) = maybeParens (d >= ltcPrec) $
+prettyP d (Letrec defs term) = maybeParens (d > ltcPrec) $
     text "letrec "
     <> (pDefs defs)
     $$ text "in " <> prettyP ltcPrec term
