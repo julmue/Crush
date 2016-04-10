@@ -57,7 +57,7 @@ runRepl = undefined
 runExe :: FilePath -> IO ()
 runExe fp = do
     s <- IOStrict.readFile fp
-    putStrLn . either show show . runProcess . process $ s
+    putStrLn . either show LPretty.prettyPrint . runProcess . process $ s
 
 process :: String -> Process (Exp String)
 process s = do
@@ -65,8 +65,8 @@ process s = do
     if name /= "main"
         then throwError MissingMain
         else return $ normalOrder defresh (Letrec [def] (Var name))
-  where
-    defresh = show
+
+defresh f = BU.uname f ++ show (BU.fresh f)
     -- this is the only reasonable way to drop the `Fresh a` wrapper
     -- because `fresh` is not exposed ...
     -- this has to change ...
