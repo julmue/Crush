@@ -20,8 +20,8 @@ library
                      , Language.Lambda.Syntax.Named.Pretty
                      , Language.Lambda.Syntax.Nameless.Exp
                      , Language.Lambda.Syntax.Translation
-                     , Language.Lambda.Semantics.Named.Eval
-                     , Language.Lambda.Semantics.Nameless.Eval
+                     , Language.Lambda.Semantics.Named.BigStep
+                     , Language.Lambda.Semantics.Nameless.BigStep
                      , Bound.Unwrap
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck

@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 
-module Language.Lambda.Semantics.Nameless.Eval
+module Language.Lambda.Semantics.Nameless.BigStep
     (
       normalOrder
     , callByName

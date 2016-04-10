@@ -16,7 +16,7 @@ import qualified Text.Parsec.String as ParsecString
 
 import qualified Language.Lambda.Syntax.Named.Parser as LParser
 import qualified Language.Lambda.Syntax.Named.Pretty as LPretty
-import Language.Lambda.Semantics.Named.Eval (normalOrder)
+import Language.Lambda.Semantics.Named.BigStep (normalOrder)
 import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Letrec))
 
 -- -----------------------------------------------------------------------------
