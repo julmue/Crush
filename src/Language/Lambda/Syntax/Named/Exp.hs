@@ -13,6 +13,7 @@ module Language.Lambda.Syntax.Named.Exp
 --    , free
     , fold
     , gFold
+    , (#)
     , (!)
     ) where
 
@@ -67,10 +68,17 @@ gFold v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
 
 
 -- constructor
+
+infixl 9 #
+
+(#) :: Exp a -> Exp a -> Exp a
+(#) = App
+
 infixr 6 !
 
 (!) :: a -> Exp a -> Exp a
 (!) = Lam
+
 
 -- -----------------------------------------------------------------------------
 -- random data generation

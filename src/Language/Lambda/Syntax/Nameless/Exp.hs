@@ -14,6 +14,8 @@ module Language.Lambda.Syntax.Nameless.Exp (
     , fold
     , mapExp
     , mapAlpha
+    , (#)
+    , (!)
     , lam
     , gLam
     , letrec
@@ -88,10 +90,15 @@ mapExp :: (n -> m) -> (a -> b) -> Exp n a -> Exp m b
 mapExp f g e = mapAlpha f . fmap g $ e
 
 -- | a smart constructor for abstractions
--- infixl 9 (@:)
---
--- (@:) :: (Exp n a) -> (Exp n a) -> (Exp n a)
--- (@:) = App
+infixl 9 #
+
+(#) :: (Exp n a) -> (Exp n a) -> (Exp n a)
+(#) = App
+
+infixr 6 !
+
+(!) :: Eq a => a -> Exp a a -> Exp a a
+(!) = lam
 
 lam :: Eq a => a -> Exp a a -> Exp a a
 
