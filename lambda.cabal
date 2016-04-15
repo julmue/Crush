@@ -38,6 +38,10 @@ library
                      -- , bound-gen
                      , parsec
                      , pretty
+                     , tasty
+                     , tasty-hunit
+                     , tasty-quickcheck
+                     , tasty-smallcheck
   default-language:    Haskell2010
 
 executable lambda
