@@ -11,7 +11,6 @@ module Language.Lambda.Semantics.Named.Internal
 import qualified Bound.Unwrap as BU
 import qualified Language.Lambda.Syntax.Named.Exp as N
 import qualified Language.Lambda.Syntax.Nameless.Exp as NL
-import Language.Lambda.Syntax.Translation (uname, name)
 
 refresh :: Functor f => f a -> f (BU.Fresh a)
 refresh = fmap BU.name
@@ -29,4 +28,4 @@ compute :: Eq a =>
     (forall n a . NL.Exp n a -> NL.Exp n a)
     -> N.Exp (BU.Fresh a)
     -> N.Exp (BU.Fresh a)
-compute h = name . h . uname
+compute h = N.name . h . N.uname
