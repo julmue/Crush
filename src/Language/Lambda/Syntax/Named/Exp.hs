@@ -11,6 +11,8 @@ module Language.Lambda.Syntax.Named.Exp
       Exp (Var,App,Lam,Letrec, fun, arg, param, body, defs, exp )
 --    , bound
 --    , free
+    , uname
+    , name
     , fold
     , gFold
     , (#)
@@ -26,8 +28,11 @@ import Data.Traversable
 import Prelude hiding (abs, fold)
 import Text.ParserCombinators.ReadP
 
+import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
+
+import qualified Language.Lambda.Syntax.Nameless.Exp as NL
 
 -- -----------------------------------------------------------------------------
 -- named lambda terms
@@ -38,6 +43,7 @@ data Exp a
     | Lam { param :: a, body :: (Exp a) }
     | Letrec { defs :: [(a, Exp a)], exp :: (Exp a) }
     deriving (Read, Show, Functor, Foldable, Traversable)
+
 
 -- folds
 fold ::
@@ -78,6 +84,27 @@ infixr 6 !
 
 (!) :: a -> Exp a -> Exp a
 (!) = Lam
+
+-- -----------------------------------------------------------------------------
+-- equality
+
+instance Eq a => Eq (Exp a) where
+     l1 == l2 = uname l1 == uname l2
+
+uname :: Eq a => Exp a -> NL.Exp a a
+uname = fold NL.Var NL.App NL.lam NL.letrec
+
+name :: Eq a => NL.Exp (Fresh a) (Fresh a) -> Exp (Fresh a)
+name (NL.Var n) = Var n
+name (fun `NL.App` arg) = name fun `App` name arg
+name l = runUnwrap (f l)
+  where
+    f :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
+    f (NL.Var n) = return (Var n)
+    f (fun `NL.App` arg) = (App) <$> f fun <*> f arg
+    f (NL.Lam (NL.Alpha n) scope) = (unwrap n scope) >>= g
+    g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
+    g (n, e) = (Lam n) <$> (f e)
 
 
 -- -----------------------------------------------------------------------------

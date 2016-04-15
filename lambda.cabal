@@ -21,7 +21,6 @@ library
                      , Language.Lambda.Syntax.Named.Testdata
                      , Language.Lambda.Syntax.Nameless.Exp
                      , Language.Lambda.Syntax.Nameless.Testdata
-                     , Language.Lambda.Syntax.Translation
                      , Language.Lambda.Semantics.Named.BigStep
                      , Language.Lambda.Semantics.Named.SmallStep
                      , Language.Lambda.Semantics.Nameless.BigStep
