@@ -1,5 +1,4 @@
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 module Language.Lambda.Semantics.Named.SmallStep
     (
@@ -19,7 +18,6 @@ import qualified Bound.Unwrap as BU
 import Language.Lambda.Semantics.Named.Internal
 import qualified Language.Lambda.Syntax.Named.Exp as N
 import qualified Language.Lambda.Syntax.Nameless.Exp as NL
-import Language.Lambda.Syntax.Translation (uname, name)
 import qualified Language.Lambda.Semantics.Nameless.SmallStep as NLB
 
 -- -----------------------------------------------------------------------------

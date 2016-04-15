@@ -1,6 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-
 module Language.Lambda.Semantics.Named.BigStep
     (
       normalOrder

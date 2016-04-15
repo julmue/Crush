@@ -28,6 +28,7 @@ library
                      , Language.Lambda.Semantics.Nameless.SmallStep
                      , Bound.Unwrap
   other-modules:       Language.Lambda.Semantics.Named.Internal
+                     , Language.Lambda.Semantics.Nameless.Internal
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
                      , bound
