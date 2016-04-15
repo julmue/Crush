@@ -23,9 +23,11 @@ library
                      , Language.Lambda.Syntax.Nameless.Testdata
                      , Language.Lambda.Syntax.Translation
                      , Language.Lambda.Semantics.Named.BigStep
+                     , Language.Lambda.Semantics.Named.SmallStep
                      , Language.Lambda.Semantics.Nameless.BigStep
                      , Language.Lambda.Semantics.Nameless.SmallStep
                      , Bound.Unwrap
+  other-modules:       Language.Lambda.Semantics.Named.Internal
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
                      , bound

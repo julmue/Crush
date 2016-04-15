@@ -4,8 +4,11 @@
 module Language.Lambda.Semantics.Nameless.SmallStep
     (
       normalOrder
+    , normalOrder1
     , callByName
+    , callByName1
     , callByValue
+    , callByValue1
     ) where
 
 import Prelude hiding (lookup)
