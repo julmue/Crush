@@ -1,7 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-
-
 module Language.Lambda.Semantics.Nameless.BigStep
     (
       normalOrder
@@ -15,9 +13,7 @@ import Bound
 import qualified Bound.Unwrap as BU
 
 import Language.Lambda.Syntax.Nameless.Exp
-
--- -----------------------------------------------------------------------------
--- computation
+import Language.Lambda.Semantics.Nameless.Internal
 
 -- normal form
 normalOrder :: forall n a . Exp n a -> Exp n a
@@ -26,11 +22,7 @@ normalOrder (Lam n s) = Lam n . toScope . normalOrder . fromScope $ s
 normalOrder (f `App` a) = case callByName f of
     Lam _ b -> normalOrder (instantiate1 a b)
     f' -> normalOrder f' `App` normalOrder a
-normalOrder (Letrec _ defScopes scope) = normalOrder (instDefs scope)
-  where
-    defs = map instDefs defScopes :: [Exp n a]
-    instDefs = instantiate lookup :: Scope Int (Exp n) a -> Exp n a
-    lookup = (defs !!) :: Int -> Exp n a
+normalOrder ltc@Letrec{} = normalOrder . instantiateLetrec $ ltc
 
 -- weak head normal form
 callByName :: forall n a . Exp n a -> Exp n a
@@ -39,11 +31,7 @@ callByName val@Lam{} = val
 callByName (fun `App` arg) = case callByName fun of
     Lam _ body -> callByName (instantiate1 arg body)
     term -> term `App` arg
-callByName (Letrec ns defScopes scope) = callByName (instDefs scope)
-  where
-    defs = map instDefs defScopes :: [Exp n a]
-    instDefs = instantiate lookup :: Scope Int (Exp n) a -> Exp n a
-    lookup = (defs !!) :: Int -> Exp n a
+callByName ltc@Letrec{} = callByName (instantiateLetrec ltc)
 
 -- head normal form
 callByValue :: forall n a . Exp n a -> Exp n a
@@ -54,8 +42,4 @@ callByValue (fun `App` arg) = case callByValue fun of
         val'@(Lam _ _) ->  callByValue (instantiate1 val' body)
         term' -> val `App` term'
     term -> term `App` arg
-callByValue (Letrec ns defScopes scope) = callByValue (instDefs scope)
-  where
-    defs = map instDefs defScopes :: [Exp n a]
-    instDefs = instantiate lookup :: Scope Int (Exp n) a -> Exp n a
-    lookup = (defs !!) :: Int -> Exp n a
+callByValue ltc@Letrec{} = callByValue . instantiateLetrec $ ltc
