@@ -2,12 +2,12 @@
 
 module Language.Lambda.Semantics.Named.SmallStep
     (
-      normalOrder
-    , normalOrder1
-    , callByName
-    , callByName1
-    , callByValue
-    , callByValue1
+      mkNormalOrder
+    , mkNormalOrder1
+    , mkCallByName
+    , mkCallByName1
+    , mkCallByValue
+    , mkCallByValue1
     ) where
 
 import Prelude hiding (lookup)
@@ -23,20 +23,20 @@ import qualified Language.Lambda.Semantics.Nameless.SmallStep as NLB
 -- -----------------------------------------------------------------------------
 -- computation
 
-normalOrder :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-normalOrder g = eval g NLB.normalOrder
+mkNormalOrder :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkNormalOrder g = eval g NLB.normalOrder
 
-normalOrder1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-normalOrder1 g = eval g NLB.normalOrder1
+mkNormalOrder1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkNormalOrder1 g = eval g NLB.normalOrder1
 
-callByName :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByName g = eval g NLB.callByName
+mkCallByName :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByName g = eval g NLB.callByName
 
-callByName1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByName1 g = eval g NLB.callByName1
+mkCallByName1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByName1 g = eval g NLB.callByName1
 
-callByValue :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByValue g = eval g NLB.callByValue
+mkCallByValue :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByValue g = eval g NLB.callByValue
 
-callByValue1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByValue1 g = eval g NLB.callByValue1
+mkCallByValue1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByValue1 g = eval g NLB.callByValue1

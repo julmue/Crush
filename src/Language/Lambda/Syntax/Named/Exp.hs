@@ -8,7 +8,7 @@
 
 module Language.Lambda.Syntax.Named.Exp
     (
-      Exp (Var,App,Lam,Letrec, fun, arg, param, body, defs, exp )
+      Exp (Var,App,Lam,Letrec)
 --    , bound
 --    , free
     , uname
@@ -39,9 +39,9 @@ import qualified Language.Lambda.Syntax.Nameless.Exp as NL
 
 data Exp a
     = Var a
-    | App { fun :: (Exp a), arg :: (Exp a) }
-    | Lam { param :: a, body :: (Exp a) }
-    | Letrec { defs :: [(a, Exp a)], exp :: (Exp a) }
+    | App (Exp a) (Exp a)                   -- fun arg
+    | Lam a (Exp a)                         -- param body
+    | Letrec [(a, Exp a)] (Exp a)           -- defs exp
     deriving (Read, Show, Functor, Foldable, Traversable)
 
 
@@ -106,6 +106,13 @@ name l = runUnwrap (f l)
     g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
     g (n, e) = (Lam n) <$> (f e)
 
+-- -----------------------------------------------------------------------------
+-- conversion functions
+-- somehow these should be geberalized:
+
+-- TODO;
+-- Maybe use Typeclass 'Convertible'
+-- see testsuite for possible implementation
 
 -- -----------------------------------------------------------------------------
 -- random data generation

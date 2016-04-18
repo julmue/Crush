@@ -30,6 +30,7 @@ library
                      , Language.Lambda.Semantics.Nameless.Internal
   build-depends:       base >= 4.7 && < 5
                      , QuickCheck
+                     , smallcheck
                      , bound
                      , prelude-extras
                      , mtl
@@ -37,31 +38,21 @@ library
                      -- , bound-gen
                      , parsec
                      , pretty
-                     , tasty
-                     , tasty-hunit
-                     , tasty-quickcheck
-                     , tasty-smallcheck
   default-language:    Haskell2010
 
-executable lambda
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  build-depends:       base
-                     , lambda
-                     , bound
-                     -- , bound-gen
-                     , mtl
-                     , parsec
-                     , strict
-  default-language:    Haskell2010
-
-test-suite lambda1-test
-  type:                exitcode-stdio-1.0
-  hs-source-dirs:      test
-  main-is:             Spec.hs
-  build-depends:       base
-                     , lambda
+test-suite lambda-test
+  type:                  exitcode-stdio-1.0
+  hs-source-dirs:        test
+  main-is:               Spec.hs
+  other-modules:         Language.Lambda.Semantics.Named.BigStep.Tests
+  build-depends:         base
+                       , lambda
+                       , QuickCheck
+                       , smallcheck
+                       , tasty
+                       , tasty-hunit
+                       , tasty-quickcheck
+                       , tasty-smallcheck
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 

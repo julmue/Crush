@@ -8,7 +8,7 @@
 module Language.Lambda.Syntax.Nameless.Exp (
       Alpha (Alpha)
     , runAlpha
-    , Exp (Var, App, Lam, Letrec, fun, arg, alpha, scope, alphas, defs, exp)
+    , Exp (Var, App, Lam, Letrec)
 --    , bound
 --    , free
     , fold
@@ -43,12 +43,12 @@ instance Eq n => Eq (Alpha n) where
 
 data Exp n a =
       Var a
-    | App { fun :: (Exp n a), arg :: (Exp n a) }
-    | Lam { alpha :: (Alpha n), scope :: (Scope () (Exp n) a) }
-    | Letrec { alphas :: (Alpha [n]), -- these can probably go ...
-               defs :: [Scope Int (Exp n) a],
-               exp  :: (Scope Int (Exp n) a)
-             }
+    -- fun arg
+    | App (Exp n a) (Exp n a)
+    -- alpha scope
+    | Lam (Alpha n) (Scope () (Exp n) a)
+    -- alphas defs scope
+    | Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
 

@@ -1,8 +1,8 @@
 module Language.Lambda.Semantics.Named.BigStep
     (
-      normalOrder
-    , callByName
-    , callByValue
+      mkNormalOrder
+    , mkCallByName
+    , mkCallByValue
     ) where
 
 import Prelude hiding (lookup)
@@ -19,11 +19,11 @@ import qualified Language.Lambda.Semantics.Nameless.BigStep as NLB
 -- computation
 
 
-normalOrder :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-normalOrder g = eval g NLB.normalOrder
+mkNormalOrder :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkNormalOrder g = eval g NLB.normalOrder
 
-callByName :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByName g = eval g NLB.callByName
+mkCallByName :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByName g = eval g NLB.callByName
 
-callByValue :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-callByValue g = eval g NLB.callByValue
+mkCallByValue :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
+mkCallByValue g = eval g NLB.callByValue
