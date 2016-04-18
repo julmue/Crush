@@ -10,7 +10,6 @@ cooked_ :: Exp String
 cooked_ = Letrec
   [ ("fls",  "f" ! "t" ! Var"f")
   , ("tru",   "f" ! "t" ! Var"t")
-  , ("if",     "b" ! "t" ! "f" ! Var"b" # Var"f" # Var"t")
   , ("zro",   "z" ! "s" ! Var"z")
   , ("scc",   "n" ! "z" ! "s" ! Var"s" # Var"n")
   , ("one",    Var"scc" # Var"zro")
