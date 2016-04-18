@@ -43,7 +43,7 @@ library
 test-suite lambda-test
   type:                  exitcode-stdio-1.0
   hs-source-dirs:        test
-  main-is:               Spec.hs
+  main-is:               Testsuite.hs
   other-modules:         Language.Lambda.Semantics.Named.BigStep.Tests
   build-depends:         base
                        , lambda
@@ -53,8 +53,31 @@ test-suite lambda-test
                        , tasty-hunit
                        , tasty-quickcheck
                        , tasty-smallcheck
-  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
-  default-language:    Haskell2010
+  ghc-options:           -threaded
+                         -rtsopts -with-rtsopts=-N
+  default-language:      Haskell2010
+
+test-suite example-cooked
+  type:                   exitcode-stdio-1.0
+  main-is:                Cooked.hs
+  hs-source-dirs:         examples
+  ghc-options:            -Wall
+                          -threaded
+  build-depends:          base
+                        , lambda
+  default-language:       Haskell2010
+
+benchmark lambda-bench
+  type:                    exitcode-stdio-1.0
+  hs-source-dirs:          bench
+  main-is:                 Benchmark.hs
+  build-depends:           base, deepseq, ghc-prim,
+                           criterion
+  ghc-options:             -O2
+                           -fmax-simplifier-iterations=10
+                           -fdicts-cheap
+                           -fspec-constr-count=6
+  default-language:       Haskell2010
 
 source-repository head
   type:     git
