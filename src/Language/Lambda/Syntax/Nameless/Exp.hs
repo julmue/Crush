@@ -43,13 +43,13 @@ instance Eq n => Eq (Alpha n) where
 
 
 data Exp n a =
-      Var a
+      Var !a
     -- fun arg
-    | App !(Exp n a) !(Exp n a)
+    | App (Exp n a) (Exp n a)
     -- alpha scope
-    | Lam !(Alpha n) (Scope () (Exp n) a)
+    | Lam (Alpha n) (Scope () (Exp n) a)
     -- alphas defs scope
-    | Letrec !(Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
+    | Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
 
