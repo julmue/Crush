@@ -49,7 +49,7 @@ data Exp n a =
     -- alpha scope
     | Lam (Alpha n) (Scope () (Exp n) a)
     -- alphas defs scope
-    | Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
+    | Letrec [Scope Int (Exp n) a] (Scope Int (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
 
@@ -63,7 +63,7 @@ instance Monad (Exp n) where
     (Var a) >>= g = g a
     (f `App` a) >>= g = (f >>= g) `App` (a >>= g)
     (Lam n s) >>= g = Lam n (s >>>= g)
-    (Letrec n ds e) >>= g = Letrec n (map (>>>= g) ds) (e >>>= g)
+    (Letrec ds e) >>= g = Letrec (map (>>>= g) ds) (e >>>= g)
 
 instance Applicative (Exp n) where
     pure = Var
@@ -73,22 +73,21 @@ fold :: forall n b f .
        (forall a . a -> f a)
     -> (forall a . f a -> f a -> f a)
     -> (forall a . Alpha n -> Scope () f a -> f a)
-    -> (forall a . Alpha [n] -> [Scope Int f a] -> (Scope Int f a) -> f a)
+    -> (forall a . [Scope Int f a] -> (Scope Int f a) -> f a)
     -> (Exp n) b -> f b
 fold v _ _ _ (Var n) = v n
 fold v a l lrc (fun_ `App` arg_) = a (fold v a l lrc fun_) (fold v a l lrc arg_)
 fold v a l lrc (Lam alpha_ scope_) = l alpha_ hScope
   where hScope = (hoistScope (fold v a l lrc ) scope_)
-fold v a l lrc (Letrec alphas_ defs_ exp_) = lrc alphas_ hDefs hExp
+fold v a l lrc (Letrec defs exp) = lrc hDefs hExp
   where
-    hDefs = hoistScope (fold v a l lrc) <$> defs_
-    hExp = hoistScope (fold v a l lrc) exp_
+    hDefs = hoistScope (fold v a l lrc) <$> defs
+    hExp = hoistScope (fold v a l lrc) exp
 
 mapAlpha :: (n -> m) -> (Exp n) a -> (Exp m) a
-mapAlpha f = fold Var App l lrc
+mapAlpha f = fold Var App l Letrec
   where
     l a s = Lam (f <$> a) s
-    lrc a ss s = Letrec (fmap (fmap f) a) ss s
 
 mapExp :: (n -> m) -> (a -> b) -> Exp n a -> Exp m b
 mapExp f g e = mapAlpha f . fmap g $ e
@@ -114,7 +113,7 @@ gLam a f e = Lam (Alpha (f a)) (abstract1 a e)
 -- | a smart constructor for let bindings
 letrec :: Eq a => [(a, Exp a a)] -> Exp a a -> Exp a a
 letrec [] b = b
-letrec ds e = Letrec (Alpha names) (map abstr bodies) (abstr e)
+letrec ds e = Letrec (map abstr bodies) (abstr e)
    where
      abstr = abstract (`elemIndex` names)
      names = map fst ds
