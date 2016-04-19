@@ -67,18 +67,6 @@ test-suite example-cooked
                         , lambda
   default-language:       Haskell2010
 
-benchmark lambda-bench
-  type:                    exitcode-stdio-1.0
-  hs-source-dirs:          bench
-  main-is:                 Benchmark.hs
-  build-depends:           base, deepseq, ghc-prim,
-                           criterion
-  ghc-options:             -O2
-                           -fmax-simplifier-iterations=10
-                           -fdicts-cheap
-                           -fspec-constr-count=6
-  default-language:       Haskell2010
-
 source-repository head
   type:     git
   location: https://github.com/julmue/LambdaInterpreter1
