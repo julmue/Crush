@@ -16,8 +16,6 @@ module Language.Lambda.Syntax.Named.Testdata
     , imp_
     , iff_
       -- arithmetic
-    , zro_
-    , one_
     , iszro_
     , scc_
     , prd_
@@ -26,6 +24,17 @@ module Language.Lambda.Syntax.Named.Testdata
     , mlt_
     , pow_
     , leqnat_
+      -- numbers
+    , zro_
+    , one_
+    , n2_
+    , n3_
+    , n4_
+    , n5_
+    , n6_
+    , n7_
+    , n8_
+    , n9_
       -- equality
     , eqbool_
     , eqnat_
@@ -112,3 +121,28 @@ leqnat_ = "x" ! "y" ! iszro_ # (sub_ # Var"x" # Var"y")
 eqbool_ = iff_
 
 eqnat_ = "x" ! "y" ! and_ # (leqnat_ # Var"x" # Var"y") # (leqnat_ # Var"y" # Var"x")
+
+
+n2_ :: Exp String
+n2_ = scc_ # one_
+
+n3_ :: Exp String
+n3_ = scc_ # n2_
+
+n4_ :: Exp String
+n4_ = scc_ # n3_
+
+n5_ :: Exp String
+n5_ = scc_ # n4_
+
+n6_ :: Exp String
+n6_ = scc_ # n5_
+
+n7_ :: Exp String
+n7_ = scc_ # n6_
+
+n8_ :: Exp String
+n8_ = scc_ # n7_
+
+n9_ :: Exp String
+n9_ = scc_ # n8_
