@@ -19,7 +19,7 @@ prettyP d (fun `App` arg) = maybeParens (d > aPrec) $
   where
     aPrec = 9
 prettyP d (Lam name body) = maybeParens (d > lPrec) $
-    text "\\" <> identifier name <> text "." <> prettyP lPrec body
+    text "λ" <> identifier name <> text "." <> prettyP lPrec body
   where
     lPrec = 6
 prettyP d (Letrec defs term) = maybeParens (d > ltcPrec) $
