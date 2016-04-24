@@ -1,16 +1,21 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Language.Lambda.Semantics.Nameless.SmallStep
     (
       normalOrder
     , normalOrder1
+    , normalOrderTraced
     , callByName
     , callByName1
+    , callByNameTraced
     , callByValue
     , callByValue1
-    , NormalForm(Fun,Neutral)
-    , getNormalform
+    , callByValueTraced
     ) where
 
 import Prelude hiding (lookup)
+
+import Control.Monad.Writer
 
 import Bound
 import qualified Bound.Unwrap as BU
@@ -21,11 +26,16 @@ import Language.Lambda.Semantics.Nameless.Internal
 
 import Language.Lambda.Syntax.Nameless.Testdata
 
-data NormalForm n a = Fun (Exp n a) | Neutral (Exp n a)
+data StepResult n a =
+      Normalform { getNF :: Exp n a }
+    | Reducible { getRD :: Exp n a }
 
-getNormalform :: NormalForm n a -> Exp n a
-getNormalform (Fun f) = f
-getNormalform (Neutral n) = n
+foldSR :: (Exp n a -> c) -> (Exp n a -> c) -> StepResult n a -> c
+foldSR n _ (Normalform e) = n e
+foldSR _ r (Reducible e) = r e
+
+unwrapStepResult :: StepResult n a -> Exp n a
+unwrapStepResult = foldSR id id
 
 -- -----------------------------------------------------------------------------
 -- Evaluation rules normal-order reduction:
@@ -45,22 +55,25 @@ getNormalform (Neutral n) = n
 
 -- small-step normal order evaluation
 normalOrder1 :: Exp n a -> Exp n a
-normalOrder1 = either getNormalform id . stepNO
+normalOrder1 = unwrapStepResult . stepNO
 
 -- multi-step normal order evaluation
 normalOrder :: Exp n a -> Exp n a
-normalOrder = either getNormalform normalOrder . stepNO
+normalOrder = foldSR id normalOrder . stepNO
 
-stepNO :: Exp n a -> Either (NormalForm n a) (Exp n a)
-stepNO app@(App fun@(Lam _ body) arg) = Right (instantiate1 arg body)
+normalOrderTraced :: Exp n a -> (Exp n a, [Exp n a])
+normalOrderTraced = tracedEval stepNO
+
+stepNO :: Exp n a -> StepResult n a
+stepNO app@(App fun@(Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepNO app@(App fun arg) = case stepNO fun of
-    Left _ -> Right app
-    Right fun' -> Right (App fun' arg)
+    Normalform _ -> Normalform app
+    Reducible fun' -> Reducible (App fun' arg)
 stepNO fun@(Lam n body) = case stepNO . fromScope $ body of
-    Left _ -> Left (Fun fun)
-    Right body' -> Right (Lam n (toScope body'))
-stepNO ltc@Letrec{} = Right (instantiateLetrec ltc)
-stepNO n = Left (Neutral n)
+    Normalform _  ->  Normalform fun
+    Reducible body' -> Reducible (Lam n (toScope body'))
+stepNO ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepNO n = Normalform n
 
 -- -----------------------------------------------------------------------------
 -- Evaluation rules Call-By-Value:
@@ -75,51 +88,65 @@ stepNO n = Left (Neutral n)
 
 -- small-step call-by-name evaluation
 callByName1 :: Exp n a -> Exp n a
-callByName1 = either id id . stepCBN
+callByName1 = foldSR id id . stepCBN
 
--- multi-step call-by-name evaluation
+-- -- multi-step call-by-name evaluation
 callByName :: Exp n a -> Exp n a
-callByName = either id callByName . stepCBN
+callByName = foldSR id callByName . stepCBN
 
-stepCBN :: Exp n a -> Either (Exp n a) (Exp n a)
-stepCBN app@(App fun@(Lam _ body) arg) = Right (instantiate1 arg body)
+callByNameTraced :: Exp n a -> (Exp n a, [Exp n a])
+callByNameTraced = tracedEval stepCBN
+
+stepCBN :: Exp n a -> StepResult n a
+stepCBN app@(App fun@(Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepCBN app@(App fun arg) = case stepCBN fun of
-    Left _ -> Right app
-    Right fun' -> Right (App fun' arg)
-stepCBN ltc@Letrec{} = Right (instantiateLetrec ltc)
-stepCBN t = Left t
+    Normalform _ -> Normalform app
+    Reducible fun' -> Reducible (App fun' arg)
+stepCBN ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepCBN n = Normalform n
 
--- -----------------------------------------------------------------------------
-{- Evaluation rules Call-By-Value:
+-- -- -----------------------------------------------------------------------------
+-- {- Evaluation rules Call-By-Value:
+--
+--     Congruence rule:
+--         t1 -> t1'
+--     ----------------- (E-App1)
+--      t1 t2 -> t1' t2
+--
+--         t2 -> t2'
+--     ----------------- (E-App2)
+--      v1 t2 -> v1 t2'
+--
+--     Computation rule:
+--     (\x.t12) v2 -> [x|->v2] t12 (E-AppAbs)
+--
+-- -}
 
-    Congruence rule:
-        t1 -> t1'
-    ----------------- (E-App1)
-     t1 t2 -> t1' t2
-
-        t2 -> t2'
-    ----------------- (E-App2)
-     v1 t2 -> v1 t2'
-
-    Computation rule:
-    (\x.t12) v2 -> [x|->v2] t12 (E-AppAbs)
-
--}
 callByValue1 :: Exp n a -> Exp n a
-callByValue1 = either id id . stepCBV
+callByValue1 = foldSR id id . stepCBV
 
 -- multi-step call-by-value evaluation / head normal form
 callByValue :: Exp n a -> Exp n a
-callByValue = either id callByValue . stepCBV
+callByValue = foldSR id callByValue . stepCBV
 
-stepCBV :: Exp n a -> Either (Exp n a) (Exp n a)
-stepCBV (App fun@(Lam n body) arg@Lam{}) = Right (instantiate1 arg body)
+callByValueTraced :: Exp n a -> (Exp n a, [Exp n a])
+callByValueTraced = tracedEval stepCBV
+
+stepCBV :: Exp n a -> StepResult n a
+stepCBV (App fun@(Lam n body) arg@Lam{}) = Reducible (instantiate1 arg body)
 stepCBV app@(App fun@Lam{} arg) = case stepCBV arg of
-    Left _ -> Left app
-    Right arg' -> Right (App fun arg')
+    Normalform _ -> Normalform app
+    Reducible arg' -> Reducible (App fun arg')
 stepCBV app@(App fun arg) = case stepCBV fun of
-    Left _ -> Right app
-    Right fun' -> Right (App fun' arg)
-stepCBV ltc@Letrec{} = Right (instantiateLetrec ltc)
-stepCBV t = Left t
+    Normalform _ -> Normalform app
+    Reducible fun' -> Reducible (App fun' arg)
+stepCBV ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepCBV n = Normalform n
 
+tracedEval :: forall n a . (Exp n a -> StepResult n a) -> Exp n a -> (Exp n a, [Exp n a])
+tracedEval step e = runWriter (go e)
+  where
+    go :: Exp n a -> Writer [Exp n a] (Exp n a)
+    go e = case step e of
+        Normalform e' -> writer (e', [e'])
+        Reducible e' -> writer (e', [e']) >>= go

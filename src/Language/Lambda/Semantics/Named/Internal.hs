@@ -2,11 +2,11 @@
 
 module Language.Lambda.Semantics.Named.Internal
     (
-      refresh
-    , defresh
-    , eval
-    , compute
+      eval
+    , evalTraced
     ) where
+
+import Data.Bifunctor
 
 import qualified Bound.Unwrap as BU
 import qualified Language.Lambda.Syntax.Named.Exp as N
@@ -22,10 +22,12 @@ eval :: Eq a =>
        (BU.Fresh a -> a)
     -> (forall n a . NL.Exp n a -> NL.Exp n a)
     -> N.Exp a -> N.Exp a
-eval g h = defresh g . compute h . refresh
+eval g h = defresh g . N.name. h . N.uname . refresh
 
-compute :: Eq a =>
-    (forall n a . NL.Exp n a -> NL.Exp n a)
-    -> N.Exp (BU.Fresh a)
-    -> N.Exp (BU.Fresh a)
-compute h = N.name . h . N.uname
+evalTraced :: Eq a =>
+       (BU.Fresh a -> a)
+    -> (forall n a . NL.Exp n a -> (NL.Exp n a, [NL.Exp n a]))
+    -> N.Exp a -> (N.Exp a, [N.Exp a])
+evalTraced g h = bimap nm (map nm) . h . N.uname . refresh
+  where
+    nm = defresh g . N.name
