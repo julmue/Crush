@@ -144,9 +144,9 @@ stepCBV ltc@Letrec{} = Reducible (instantiateLetrec ltc)
 stepCBV n = Normalform n
 
 tracedEval :: forall n a . (Exp n a -> StepResult n a) -> Exp n a -> (Exp n a, [Exp n a])
-tracedEval step e = runWriter (go e)
+tracedEval step e = runWriter $ writer (e,[e]) >>= go
   where
     go :: Exp n a -> Writer [Exp n a] (Exp n a)
     go e = case step e of
-        Normalform e' -> writer (e', [e'])
+        Normalform e' -> writer (e', mempty)
         Reducible e' -> writer (e', [e']) >>= go
