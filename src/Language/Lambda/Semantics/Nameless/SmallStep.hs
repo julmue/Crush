@@ -6,6 +6,8 @@ module Language.Lambda.Semantics.Nameless.SmallStep
     , callByName1
     , callByValue
     , callByValue1
+    , NormalForm(Fun,Neutral)
+    , getNormalform
     ) where
 
 import Prelude hiding (lookup)
@@ -18,6 +20,12 @@ import Language.Lambda.Syntax.Nameless.Exp (Exp(Var, App, Lam, Letrec))
 import Language.Lambda.Semantics.Nameless.Internal
 
 import Language.Lambda.Syntax.Nameless.Testdata
+
+data NormalForm n a = Fun (Exp n a) | Neutral (Exp n a)
+
+getNormalform :: NormalForm n a -> Exp n a
+getNormalform (Fun f) = f
+getNormalform (Neutral n) = n
 
 -- -----------------------------------------------------------------------------
 -- Evaluation rules normal-order reduction:
@@ -37,22 +45,22 @@ import Language.Lambda.Syntax.Nameless.Testdata
 
 -- small-step normal order evaluation
 normalOrder1 :: Exp n a -> Exp n a
-normalOrder1 = either id id . stepNO
+normalOrder1 = either getNormalform id . stepNO
 
 -- multi-step normal order evaluation
 normalOrder :: Exp n a -> Exp n a
-normalOrder = either id normalOrder . stepNO
+normalOrder = either getNormalform normalOrder . stepNO
 
-stepNO :: Exp n a -> Either (Exp n a) (Exp n a)
+stepNO :: Exp n a -> Either (NormalForm n a) (Exp n a)
 stepNO app@(App fun@(Lam _ body) arg) = Right (instantiate1 arg body)
 stepNO app@(App fun arg) = case stepNO fun of
     Left _ -> Right app
     Right fun' -> Right (App fun' arg)
 stepNO fun@(Lam n body) = case stepNO . fromScope $ body of
-    Left _ -> Left fun
+    Left _ -> Left (Fun fun)
     Right body' -> Right (Lam n (toScope body'))
 stepNO ltc@Letrec{} = Right (instantiateLetrec ltc)
-stepNO t = Left t
+stepNO n = Left (Neutral n)
 
 -- -----------------------------------------------------------------------------
 -- Evaluation rules Call-By-Value:

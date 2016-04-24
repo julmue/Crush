@@ -3,7 +3,8 @@ module Main where
 import Language.Lambda.Syntax.Named.Exp
 import qualified Language.Lambda.Syntax.Named.Parser as Parser
 import qualified Language.Lambda.Syntax.Named.Pretty as Pretty
-import Language.Lambda.Semantics.Named.BigStep
+import qualified Language.Lambda.Semantics.Named.BigStep as BS
+import qualified Language.Lambda.Semantics.Named.SmallStep as SS
 
 import Control.Exception
 import Control.Monad.Except
@@ -27,5 +28,6 @@ renderFresh :: BU.Fresh String -> String
 renderFresh f = BU.uname f ++ show (BU.fresh f)
 
 normalOrder :: Exp String -> Exp String
-normalOrder = mkNormalOrder renderFresh
+normalOrder = BS.mkNormalOrder renderFresh
+
 
