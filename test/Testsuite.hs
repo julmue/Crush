@@ -7,8 +7,10 @@ import Data.List
 import Data.Ord
 
 import Language.Lambda.Semantics.Named.BigStep.Tests
+import Language.Lambda.Semantics.Named.SmallStep.Tests
 
 main :: IO ()
 main = defaultMain $ testGroup "Tests"
     [ bigStepTests
+    , smallStepTests
     ]
