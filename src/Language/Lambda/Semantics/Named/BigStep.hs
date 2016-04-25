@@ -7,12 +7,10 @@ module Language.Lambda.Semantics.Named.BigStep
 
 import Prelude hiding (lookup)
 
-import Bound
 import qualified Bound.Unwrap as BU
 
 import Language.Lambda.Semantics.Named.Internal
 import qualified Language.Lambda.Syntax.Named.Exp as N
-import qualified Language.Lambda.Syntax.Nameless.Exp as NL
 import qualified Language.Lambda.Semantics.Nameless.BigStep as NLB
 
 -- -----------------------------------------------------------------------------

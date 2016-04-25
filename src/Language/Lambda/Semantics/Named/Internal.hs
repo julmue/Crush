@@ -20,13 +20,13 @@ defresh g = fmap g
 
 eval :: Eq a =>
        (BU.Fresh a -> a)
-    -> (forall n a . NL.Exp n a -> NL.Exp n a)
+    -> (forall n b . NL.Exp n b -> NL.Exp n b)
     -> N.Exp a -> N.Exp a
 eval g h = defresh g . N.name. h . N.uname . refresh
 
 evalTraced :: Eq a =>
        (BU.Fresh a -> a)
-    -> (forall n a . NL.Exp n a -> (NL.Exp n a, [NL.Exp n a]))
+    -> (forall n b . NL.Exp n b -> (NL.Exp n b, [NL.Exp n b]))
     -> N.Exp a -> (N.Exp a, [N.Exp a])
 evalTraced g h = bimap nm (map nm) . h . N.uname . refresh
   where

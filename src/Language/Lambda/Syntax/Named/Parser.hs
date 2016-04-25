@@ -27,7 +27,6 @@ Todo: constants (Integers, Chars, Strings, ...)
 import Control.Applicative
 
 import qualified Text.Parsec as P
-import qualified Text.Parsec.Expr as E
 import qualified Text.Parsec.String as S
 import Text.Parsec.Language as L
 import qualified Text.Parsec.Token as T
@@ -83,7 +82,7 @@ lam = do
     (reservedOp "\\" <|> reservedOp "λ")
     n <- identifier
     -- "." this is a hack because strange parsec behaviour with reservedOp "."
-    P.char '.'
+    _ <- P.char '.'
     P.spaces
     --
     e <- expr

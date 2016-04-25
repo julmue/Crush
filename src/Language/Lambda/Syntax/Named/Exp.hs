@@ -19,14 +19,11 @@ module Language.Lambda.Syntax.Named.Exp
     , (!)
     ) where
 
-import Data.Char
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
 import Data.Foldable
 import Data.Traversable
 #endif
-import Prelude hiding (abs, fold)
-import Text.ParserCombinators.ReadP
 
 import Bound (Scope(..),instantiate)
 import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap, freshify)
@@ -106,7 +103,7 @@ name = runUnwrap . go
              -> NL.Exp (Fresh a) (Fresh a)
         inst names = instantiate (dict names)
         dict :: [Fresh a] -> Int -> NL.Exp (Fresh a) (Fresh a)
-        dict ns i = NL.Var (ns !! i)
+        dict names i = NL.Var (names !! i)
 
 -- -----------------------------------------------------------------------------
 -- random data generation

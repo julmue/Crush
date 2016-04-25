@@ -30,7 +30,7 @@ prettyP d (Letrec defs term) = maybeParens (d > ltcPrec) $
     pDefs :: Show a => [(a, Exp a)] -> Doc
     pDefs = braces . cat . punctuate semi . fmap pDef
     pDef :: Show a => (a, Exp a) -> Doc
-    pDef (name, term) = identifier name <> text " = " <> prettyP ltcPrec term
+    pDef (n, t) = identifier n <> text " = " <> prettyP ltcPrec t
     ltcPrec = 10
 
 

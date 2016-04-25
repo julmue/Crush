@@ -28,7 +28,7 @@ main = do
     output . process opts $ input
 
 getOpts :: IO (Options)
-getOpts = execParser $ info (helper <*> options)
+getOpts = execParser $ info (helper <*> optionsP)
     (   fullDesc
     <>  header "lambda - interpreter for the untyped lambda calculus"
     <>  progDesc "Normalize and trace a lambda expression, \
@@ -37,11 +37,11 @@ getOpts = execParser $ info (helper <*> options)
                  \the normalized term to standard output."
     )
 
-options :: Parser Options
-options = Options <$> mode <*> strategy
+optionsP :: Parser Options
+optionsP = Options <$> modeP <*> strategyP
 
-mode :: Parser Mode
-mode = option auto
+modeP :: Parser Mode
+modeP = option auto
     ( short 'm'
    <> long "mode"
    <> helpDoc (Just modeHelp)
@@ -55,8 +55,8 @@ mode = option auto
              , text ("* " ++ show Trace)
              ]
 
-strategy :: Parser Strategy
-strategy = option auto
+strategyP :: Parser Strategy
+strategyP = option auto
     ( short 's'
    <> long "strategy"
    <> helpDoc (Just strategyHelp)

@@ -3,6 +3,8 @@
 module Bound.Unwrap ( Fresh (fresh, uname)
                     , name
                     , freshify
+                    , erase
+                    , nameF
                     , Counter
                     , UnwrapT
                     , Unwrap
@@ -12,7 +14,6 @@ module Bound.Unwrap ( Fresh (fresh, uname)
                     , unwrapAll) where
 import Bound
 import Control.Monad.Identity
-import Control.Applicative
 import Control.Monad.Gen
 
 data Fresh a = Fresh { fresh :: !Int

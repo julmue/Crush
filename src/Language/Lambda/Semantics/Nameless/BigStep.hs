@@ -10,7 +10,6 @@ module Language.Lambda.Semantics.Nameless.BigStep
 import Prelude hiding (lookup)
 
 import Bound
-import qualified Bound.Unwrap as BU
 
 import Language.Lambda.Syntax.Nameless.Exp
 import Language.Lambda.Semantics.Nameless.Internal

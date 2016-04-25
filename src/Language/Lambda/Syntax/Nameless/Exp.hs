@@ -26,7 +26,6 @@ import Control.Monad (ap)
 import Data.List (elemIndex)
 
 import Bound
-import Bound.Scope
 import Prelude.Extras
 
 -- -----------------------------------------------------------------------------

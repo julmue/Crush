@@ -14,21 +14,16 @@ module Language.Lambda.Semantics.Nameless.SmallStep
     ) where
 
 import Prelude hiding (lookup)
-
 import Control.Monad.Writer
 
 import Bound
-import qualified Bound.Unwrap as BU
 
-import qualified Language.Lambda.Syntax.Nameless.Exp as NL
-import Language.Lambda.Syntax.Nameless.Exp (Exp(Var, App, Lam, Letrec))
+import Language.Lambda.Syntax.Nameless.Exp
 import Language.Lambda.Semantics.Nameless.Internal
 
-import Language.Lambda.Syntax.Nameless.Testdata
-
 data StepResult n a =
-      Normalform { getNF :: Exp n a }
-    | Reducible { getRD :: Exp n a }
+      Normalform (Exp n a)
+    | Reducible (Exp n a)
 
 foldSR :: (Exp n a -> c) -> (Exp n a -> c) -> StepResult n a -> c
 foldSR n _ (Normalform e) = n e
@@ -69,7 +64,7 @@ normalOrderTraced :: Exp n a -> (Exp n a, [Exp n a])
 normalOrderTraced = tracedEval stepNO
 
 stepNO :: Exp n a -> StepResult n a
-stepNO app@(App fun@(Lam _ body) arg) = Reducible (instantiate1 arg body)
+stepNO (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepNO app@(App fun arg) = case stepNO fun of
     Normalform _ -> case stepNO arg of
         Normalform _ -> Normalform app
@@ -104,7 +99,7 @@ callByNameTraced :: Exp n a -> (Exp n a, [Exp n a])
 callByNameTraced = tracedEval stepCBN
 
 stepCBN :: Exp n a -> StepResult n a
-stepCBN app@(App fun@(Lam _ body) arg) = Reducible (instantiate1 arg body)
+stepCBN (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepCBN app@(App fun arg) = case stepCBN fun of
     Normalform _ -> Normalform app
     Reducible fun' -> Reducible (App fun' arg)
@@ -139,7 +134,7 @@ callByValueTraced :: Exp n a -> (Exp n a, [Exp n a])
 callByValueTraced = tracedEval stepCBV
 
 stepCBV :: Exp n a -> StepResult n a
-stepCBV (App fun@(Lam n body) arg@Lam{}) = Reducible (instantiate1 arg body)
+stepCBV (App (Lam _ body) arg@Lam{}) = Reducible (instantiate1 arg body)
 stepCBV app@(App fun@Lam{} arg) = case stepCBV arg of
     Normalform _ -> Normalform app
     Reducible arg' -> Reducible (App fun arg')
@@ -150,7 +145,7 @@ stepCBV ltc@Letrec{} = Reducible (instantiateLetrec ltc)
 stepCBV n = Normalform n
 
 tracedEval :: forall n a . (Exp n a -> StepResult n a) -> Exp n a -> (Exp n a, [Exp n a])
-tracedEval step e = runWriter $ writer (e,[e]) >>= go
+tracedEval step expr = runWriter $ writer (expr,[expr]) >>= go
   where
     go :: Exp n a -> Writer [Exp n a] (Exp n a)
     go e = case step e of
