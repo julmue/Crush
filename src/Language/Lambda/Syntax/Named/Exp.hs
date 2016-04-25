@@ -28,7 +28,9 @@ import Data.Traversable
 import Prelude hiding (abs, fold)
 import Text.ParserCombinators.ReadP
 
-import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
+-- remember to delete this:
+import Bound
+import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap, freshify)
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
 
@@ -95,17 +97,66 @@ uname :: Eq a => Exp a -> NL.Exp a a
 uname = fold NL.Var NL.App NL.lam NL.letrec
 
 name :: Eq a => NL.Exp (Fresh a) (Fresh a) -> Exp (Fresh a)
-name (NL.Var n) = Var n
-name (fun `NL.App` arg) = name fun `App` name arg
-name l = runUnwrap (f l)
+name = runUnwrap . go
   where
-    f :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
-    f (NL.Var n) = return (Var n)
-    f (fun `NL.App` arg) = (App) <$> f fun <*> f arg
-    f (NL.Lam (NL.Alpha n) scope) = (unwrap n scope) >>= g
-    f (NL.Letrec {- alphas -} defs  scope) = undefined
-    g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
-    g (n, e) = (Lam n) <$> (f e)
+    go :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
+    go (NL.Var n) = return (Var n)
+    go (fun `NL.App` arg) = App <$> (go fun) <*> (go arg)
+    go (NL.Lam (NL.Alpha n) scope) = do
+        (n', e) <- unwrap n scope
+        Lam n' <$> go e
+    go (NL.Letrec (NL.Alpha ns) defs scope) = do
+        ns' <- sequence . fmap freshify $ ns
+        defbodies <- sequence . fmap (go . inst ns') $ defs
+        scope' <- go . inst ns'$ scope
+        let defs' = zip ns' defbodies
+        return (Letrec defs' scope')
+      where
+        inst :: [Fresh a]
+             -> Scope Int (NL.Exp (Fresh a)) (Fresh a)
+             -> NL.Exp (Fresh a) (Fresh a)
+        inst names = instantiate (dict names)
+        dict :: [Fresh a] -> Int -> NL.Exp (Fresh a) (Fresh a)
+        dict ns i = NL.Var (ns !! i)
+
+
+dscopes :: [Scope Int (NL.Exp (Fresh a)) (Fresh a)]
+dscopes = undefined
+
+scope :: Scope Int (NL.Exp (Fresh a)) (Fresh a)
+scope = undefined
+
+names :: [Fresh a]
+names = undefined
+
+
+
+
+
+-- name lam@Lam{} = runUnwrap (f lam)
+--   where
+--     f :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
+--     f (NL.Var n) = return (Var n)
+--     f (fun `NL.App` arg) = (App) <$> f fun <*> f arg
+--     f (NL.Lam (NL.Alpha n) scope) = (unwrap n scope) >>= g
+
+
+-- Letrec [(a, Exp a)] (Exp a)
+-- Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
+
+
+-- für die definitionen:
+-- ne, dass geht so glaub ich auch nicht ... die definitionen sind ja
+-- auch gegenseitig rekursiv ...
+-- defs' = zipWith ns defs unwrap
+-- defs'' = zip ns defs'
+
+-- für den körper:
+-- hier wirds schwer ... es braucht eine funktion die
+-- eine listes von namen gleichzeitig in einem scopus instantiert ...
+
+-- g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
+-- g (n, e) = (Lam n) <$> (f e)
 
 
 -- -----------------------------------------------------------------------------
