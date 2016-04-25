@@ -103,16 +103,10 @@ name l = runUnwrap (f l)
     f (NL.Var n) = return (Var n)
     f (fun `NL.App` arg) = (App) <$> f fun <*> f arg
     f (NL.Lam (NL.Alpha n) scope) = (unwrap n scope) >>= g
+    f (NL.Letrec {- alphas -} defs  scope) = undefined
     g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
     g (n, e) = (Lam n) <$> (f e)
 
--- -----------------------------------------------------------------------------
--- conversion functions
--- somehow these should be geberalized:
-
--- TODO;
--- Maybe use Typeclass 'Convertible'
--- see testsuite for possible implementation
 
 -- -----------------------------------------------------------------------------
 -- random data generation
