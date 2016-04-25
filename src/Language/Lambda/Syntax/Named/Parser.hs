@@ -39,7 +39,7 @@ lexer :: T.TokenParser ()
 lexer = T.makeTokenParser style
   where
     keys = ["letrec", "in"]
-    ops = [".", "\\", ";","="]
+    ops = ["\\", "λ", ".", ";", "="]
     style = emptyDef
         { T.reservedNames = keys
         , T.reservedOpNames = ops
@@ -80,7 +80,7 @@ app = atom `P.chainl1` (pure App)
 
 lam :: S.Parser (Exp String)
 lam = do
-    reservedOp "\\"
+    (reservedOp "\\" <|> reservedOp "λ")
     n <- identifier
     -- "." this is a hack because strange parsec behaviour with reservedOp "."
     P.char '.'
