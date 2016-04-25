@@ -156,7 +156,7 @@ iszro_Tests = testGroup "iszro_Tests"
 
 scc_Tests = testGroup "scc_Tests"
     [ testCase "scc_ 1" $
-        normalOrder (scc_ # zro_) @=? one_
+        normalOrder (scc_ # zro_) @?= one_
     , QC.testProperty "scc_ 2" $
         QC.forAll (interval 0 250) $
             \n -> normalOrder (scc_ # (unsafeFromInt n)) == unsafeFromInt (succ n)
@@ -168,9 +168,9 @@ scc_Tests = testGroup "scc_Tests"
 
 prd_Tests = testGroup "prd_Tests"
     [ testCase "prd_ 1" $
-        normalOrder (prd_ # zro_) @=? zro_
+        normalOrder (prd_ # zro_) @?= zro_
     , testCase "prd_ 2" $
-        normalOrder (prd_ # one_) @=? zro_
+        normalOrder (prd_ # one_) @?= zro_
     ]
 
 scc_prd_RelationTests = testGroup "scc_prd_RelationTests"

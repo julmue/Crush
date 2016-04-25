@@ -40,10 +40,14 @@ unwrapStepResult = foldSR id id
 -- -----------------------------------------------------------------------------
 -- Evaluation rules normal-order reduction:
 --
---  Congruence rule:
+--  Congruence rules:
 --      t1 -> t1'
 --  ----------------- (E-App1)
 --   t1 t2 -> t1' t2
+--
+--      t2 -> t2'
+--  ----------------- (E-App2)
+--   t1 t2 -> t1 t2'
 --
 --  Computation rule:
 --  (\x.t12) v2 -> [x|->v2] t12 (E-AppAbs)
@@ -67,7 +71,9 @@ normalOrderTraced = tracedEval stepNO
 stepNO :: Exp n a -> StepResult n a
 stepNO app@(App fun@(Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepNO app@(App fun arg) = case stepNO fun of
-    Normalform _ -> Normalform app
+    Normalform _ -> case stepNO arg of
+        Normalform _ -> Normalform app
+        Reducible arg' -> Reducible (App fun arg')
     Reducible fun' -> Reducible (App fun' arg)
 stepNO fun@(Lam n body) = case stepNO . fromScope $ body of
     Normalform _  ->  Normalform fun

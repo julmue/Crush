@@ -1,31 +1,43 @@
 module Language.Lambda.Syntax.Nameless.Testdata
     ( -- function
-      s
-    , k
-    , i
-    , omega
-    , _Omega
-    , y
+      s_
+    , k_
+    , i_
+    , omega_
+    , _Omega_
+    , fix_
       -- logic
-    , tru
-    , fls
+    , tru_
+    , fls_
     , if_
     , not_
     , and_
     , or_
+    , imp_
+    , iff_
       -- arithmetic
-    , zro
-    , iszro
-    , scc
-    , prd
-    , pls
-    , sub
-    , mlt
-    , pow
-    , leqnat
+    , iszro_
+    , scc_
+    , prd_
+    , add_
+    , sub_
+    , mlt_
+    , pow_
+    , leqnat_
+      -- numbers
+    , zro_
+    , one_
+    , n2_
+    , n3_
+    , n4_
+    , n5_
+    , n6_
+    , n7_
+    , n8_
+    , n9_
       -- equality
-    , eqbool
-    , eqnat
+    , eqbool_
+    , eqnat_
     ) where
 
 import Language.Lambda.Syntax.Nameless.Exp
@@ -33,28 +45,28 @@ import Language.Lambda.Syntax.Nameless.Exp
 -- functions
 
 -- S (substitution)
-s = "x" ! "y" ! "z" ! Var "x" # Var "y" # (Var "x" # Var "z")
+s_ = "x" ! "y" ! "z" ! Var "x" # Var "y" # (Var "x" # Var "z")
 
 -- K (constant)
-k = "x" ! "y" ! Var "x"
+k_ = "x" ! "y" ! Var "x"
 
 -- I (identity)
-i = "x" ! Var "x"
+i_ = "x" ! Var "x"
 
 -- omega
-omega = "x" ! Var"x" # Var"x"
+omega_ = "x" ! Var"x" # Var"x"
 
-_Omega = omega # omega
+_Omega_ = omega_ # omega_
 
 -- fixpoint
-y = "g" ! ("x" ! Var"g" # (Var"x" # Var"x")) # ("x" ! Var"g" # (Var"x" # Var"x"))
+fix_ = "g" ! ("x" ! Var"g" # (Var"x" # Var"x")) # ("x" ! Var"g" # (Var"x" # Var"x"))
 
 
 -- logic
 
-tru = "t" ! "f" ! Var"t"
+tru_ = "t" ! "f" ! Var"t"
 
-fls = "t" ! "f" ! Var"f"
+fls_ = "t" ! "f" ! Var"f"
 
 if_ = "p" ! "t" ! "f" ! Var"p" # Var"t" # Var"f"
 
@@ -64,37 +76,73 @@ and_ = "p" ! "q" ! Var"p" # Var"q" # Var"p"
 
 or_ = "p" ! "q" ! Var"p" # Var"p" # Var"q"
 
-imp = "p" ! "q" ! or_ # (not_ # Var"p") # Var"q"
+imp_ = "p" ! "q" ! or_ # (not_ # Var"p") # Var"q"
 
-iff =  "q" ! "q" ! and_ # (imp # Var"p" # Var"q") # (imp # Var"q" # Var"p")
+iff_ =  "p" ! "q" ! and_ # (imp_ # Var"p" # Var"q") # (imp_ # Var"q" # Var"p")
 
 -- arithmetic
 
-zro = "f" ! "x" ! Var"x"
+zro_ = "f" ! "x" ! Var"x"
 
-iszro = "n" ! Var"n" # ("_" ! Var"fls") # tru
+one_ = "f" ! "x" ! Var"f" # Var"x"
 
-scc = "n" ! "f" ! "x" ! Var"f" # (Var"n" # Var"f" # Var"x")
+iszro_ = "n" ! Var"n" # ("_" ! fls_) # tru_
 
-prd = "n" ! "f" ! "x" !
-    Var"n" # ("g" ! "h" ! Var"h" # (Var"g" # Var"f")) # ("_" ! Var"x") # i
+scc_ = "n" ! "f" ! "x" ! Var"f" # (Var"n" # Var"f" # Var"x")
 
-pls = "x" ! "y" ! Var"x" # (scc # Var"y")
+prd_ = "n" ! "f" ! "x" !
+    Var"n" # ("g" ! "h" ! Var"h" # (Var"g" # Var"f")) # ("_" ! Var"x") # i_
 
-sub = "x" ! "y" ! Var"y" # (prd # Var"x")
+--pls_ = "x" ! "y" ! Var"x" # (scc_ # Var"y")
+add_ = "x" ! "y" ! if_ # (iszro_ # Var"y") #
+                   Var"x" #
+                   (add_ # (scc_ # Var"x") # (prd_ # Var"y"))
 
-mlt = "x" ! "y" ! "f" ! Var"x" # (Var"y" # Var"f")
+sub_ = "x" ! "y" ! if_ # (iszro_ # Var"y") #
+                   Var"x" #
+                   (sub_ # (prd_ # Var"x") # (prd_ # Var"y"))
 
-pow = "b" ! "e" ! Var"e" # Var"b"
+-- mlt_ = "x" ! "y" ! "f" ! Var"x" # (Var"y" # Var"f")
+mlt_ = "x" ! "y" ! if_ # (iszro_ # Var"y") #
+                   zro_ #
+                   (add_ # Var"x" # (mlt_ # Var"x" # (prd_ # Var"y")))
+
+--pow_ = "b" ! "e" ! Var"e" # Var"b"
+pow_ = "b" ! "e" ! if_ # (iszro_ # Var"e") #
+                   one_ #
+                   (mlt_ # Var"b" # (pow_ # Var"b" # (prd_ # Var "e")))
 
 --relation
 
-leqnat = "x" ! "y" ! iszro # (sub # Var"x" # Var"y")
+leqnat_ = "x" ! "y" ! iszro_ # (sub_ # Var"x" # Var"y")
 
 -- equality
 
-eqbool = iff
+eqbool_ = iff_
 
-eqnat = "x" ! "y" ! and_ # (leqnat # Var"x" # Var"y") # (leqnat # Var"y" # Var"x")
+eqnat_ = "x" ! "y" ! and_ # (leqnat_ # Var"x" # Var"y") # (leqnat_ # Var"y" # Var"x")
 
 
+n2_ :: Exp String String
+n2_ = scc_ # one_
+
+n3_ :: Exp String String
+n3_ = scc_ # n2_
+
+n4_ :: Exp String String
+n4_ = scc_ # n3_
+
+n5_ :: Exp String String
+n5_ = scc_ # n4_
+
+n6_ :: Exp String String
+n6_ = scc_ # n5_
+
+n7_ :: Exp String String
+n7_ = scc_ # n6_
+
+n8_ :: Exp String String
+n8_ = scc_ # n7_
+
+n9_ :: Exp String String
+n9_ = scc_ # n8_
