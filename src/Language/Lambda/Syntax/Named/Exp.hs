@@ -28,8 +28,7 @@ import Data.Traversable
 import Prelude hiding (abs, fold)
 import Text.ParserCombinators.ReadP
 
--- remember to delete this:
-import Bound
+import Bound (Scope(..),instantiate)
 import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap, freshify)
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
@@ -46,8 +45,6 @@ data Exp a
     | Letrec [(a, Exp a)] (Exp a)           -- defs exp
     deriving (Read, Show, Functor, Foldable, Traversable)
 
-
--- folds
 fold ::
        (a -> n a)
     -> (n a -> n a -> n a)
@@ -74,21 +71,13 @@ gFold v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
   where
     g = gFold v a l ltc
 
-
--- constructor
-
 infixl 9 #
-
 (#) :: Exp a -> Exp a -> Exp a
 (#) = App
 
 infixr 6 !
-
 (!) :: a -> Exp a -> Exp a
 (!) = Lam
-
--- -----------------------------------------------------------------------------
--- equality
 
 instance Eq a => Eq (Exp a) where
      l1 == l2 = uname l1 == uname l2
@@ -118,46 +107,6 @@ name = runUnwrap . go
         inst names = instantiate (dict names)
         dict :: [Fresh a] -> Int -> NL.Exp (Fresh a) (Fresh a)
         dict ns i = NL.Var (ns !! i)
-
-
-dscopes :: [Scope Int (NL.Exp (Fresh a)) (Fresh a)]
-dscopes = undefined
-
-scope :: Scope Int (NL.Exp (Fresh a)) (Fresh a)
-scope = undefined
-
-names :: [Fresh a]
-names = undefined
-
-
-
-
-
--- name lam@Lam{} = runUnwrap (f lam)
---   where
---     f :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
---     f (NL.Var n) = return (Var n)
---     f (fun `NL.App` arg) = (App) <$> f fun <*> f arg
---     f (NL.Lam (NL.Alpha n) scope) = (unwrap n scope) >>= g
-
-
--- Letrec [(a, Exp a)] (Exp a)
--- Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
-
-
--- für die definitionen:
--- ne, dass geht so glaub ich auch nicht ... die definitionen sind ja
--- auch gegenseitig rekursiv ...
--- defs' = zipWith ns defs unwrap
--- defs'' = zip ns defs'
-
--- für den körper:
--- hier wirds schwer ... es braucht eine funktion die
--- eine listes von namen gleichzeitig in einem scopus instantiert ...
-
--- g :: (Fresh a, NL.Exp (Fresh a) (Fresh a)) -> Unwrap (Exp (Fresh a))
--- g (n, e) = (Lam n) <$> (f e)
-
 
 -- -----------------------------------------------------------------------------
 -- random data generation
