@@ -4,6 +4,8 @@ import Control.Exception
 import Control.Monad.Except
 import System.IO (hPutStrLn, stderr, stdout)
 
+import Options.Applicative
+
 import Language.Lambda.Syntax.Named.Exp
 import qualified Language.Lambda.Syntax.Named.Parser as Parser
 import qualified Language.Lambda.Syntax.Named.Pretty as Pretty
@@ -12,9 +14,10 @@ import qualified Language.Lambda.Semantics.Named.SmallStep as SS
 
 import qualified Bound.Unwrap as BU
 
+-- flags
 data Mode = Default | Trace | Normalize deriving (Show, Eq)
-
 data Strategy = NormalOrder | CallByName | CallByValue deriving (Show, Eq)
+data Options = Options Mode Strategy deriving (Show, Eq)
 
 data Output = Output
     { toStdout :: Maybe String
@@ -23,10 +26,50 @@ data Output = Output
 
 main :: IO ()
 main = do
-    let mode = Default
-        strategy = NormalOrder
+    opts <- execParser $ info (helper <*> parser)
+        (   fullDesc
+        <>  header "lambda - interpreter for the untyped lambda calculus"
+        <>  progDesc "Normalize and trace a lambda expression, \
+                     \reading the expression from standard input, writing the \
+                     \expression type to standard error, and writing \
+                     \the normalized term to standard output."
+        )
     input <- getContents
-    output (process mode strategy input)
+    output . process opts $ input
+
+mode :: Parser Mode
+mode = subparser
+        (   command "trace"
+            (info (helper <*> pure Trace)
+                (   fullDesc
+                <>  header "lambda trace - Trace lambda expression evaluation"
+                <>  progDesc "Trace the execution of a lambda expression,\
+                             \reading the expression from standard input and \
+                             \writing the derivation tree to standard output."
+                )
+            )
+        <>  metavar "trace"
+        )
+    <|> subparser
+        (   command "normalize"
+            (   info (helper <*> pure Normalize)
+                (   fullDesc
+                <>  header "lambda normalize - Normalize a lambda expression"
+                <>  progDesc "Reduce a lambda expression to normal form using \
+                             \β-reduction, reading the program \
+                             \from standard input and writing the normalized \
+                             \program to standard output."
+                ) )
+        <>  metavar "normalize"
+        )
+    <|> pure Default
+
+strategy :: Parser Strategy
+strategy = pure NormalOrder
+
+parser :: Parser Options
+parser = Options <$> mode <*> strategy
+
 
 output :: Output -> IO ()
 output (Output out err) = do
@@ -36,8 +79,8 @@ output (Output out err) = do
     op h (Just s) = hPutStrLn h s
     op _ Nothing = return ()
 
-process :: Mode -> Strategy -> String -> Output
-process mode strategy stream = case Parser.expression stream of
+process :: Options -> String -> Output
+process (Options mode strategy) stream = case Parser.expression stream of
     Left err        -> Output Nothing (Just (show err))
     Right expr -> case mode of
         Default     -> Output (Just prettyE) (Just prettyDerivation)
