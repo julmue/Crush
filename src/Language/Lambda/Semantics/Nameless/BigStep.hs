@@ -12,7 +12,6 @@ import Prelude hiding (lookup)
 import Bound
 
 import Language.Lambda.Syntax.Nameless.Exp
-import Language.Lambda.Semantics.Nameless.Internal
 
 -- normal form
 normalOrder :: forall n a . Exp n a -> Exp n a
@@ -21,7 +20,7 @@ normalOrder (Lam n s) = Lam n . toScope . normalOrder . fromScope $ s
 normalOrder (f `App` a) = case callByName f of
     Lam _ b -> normalOrder (instantiate1 a b)
     f' -> normalOrder f' `App` normalOrder a
-normalOrder ltc@Letrec{} = normalOrder . instantiateLetrec $ ltc
+normalOrder (Let _ d s) = normalOrder (instantiate1 d s)
 
 -- weak head normal form
 callByName :: forall n a . Exp n a -> Exp n a
@@ -30,7 +29,7 @@ callByName val@Lam{} = val
 callByName (fun `App` arg) = case callByName fun of
     Lam _ body -> callByName (instantiate1 arg body)
     term -> term `App` arg
-callByName ltc@Letrec{} = callByName (instantiateLetrec ltc)
+callByName (Let _ d s) = normalOrder (instantiate1 d s)
 
 -- head normal form
 callByValue :: forall n a . Exp n a -> Exp n a
@@ -41,4 +40,5 @@ callByValue (fun `App` arg) = case callByValue fun of
         val'@(Lam _ _) ->  callByValue (instantiate1 val' body)
         term' -> val `App` term'
     term -> term `App` arg
-callByValue ltc@Letrec{} = callByValue . instantiateLetrec $ ltc
+callByValue (Let _ d@Lam{} s) = normalOrder (instantiate1 d s)
+callByValue (Let n d s) = normalOrder (Let n (normalOrder d) s)

@@ -24,7 +24,6 @@ module Language.Lambda.Syntax.Nameless.Exp (
 ) where
 
 import Control.Monad (ap)
-import Data.List (elemIndex)
 
 import Bound
 import Prelude.Extras

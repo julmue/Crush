@@ -22,7 +22,6 @@ import Control.Monad.Writer
 import Bound
 
 import Language.Lambda.Syntax.Nameless.Exp
-import Language.Lambda.Semantics.Nameless.Internal
 
 data StepResult n a =
       Normalform (Exp n a)
@@ -54,6 +53,14 @@ unwrapStepResult = foldSR id id
 --      t1 -> t1'
 --  ------------------
 --   (\x.t1) -> \x.t1'
+--
+--  Evaluation rule for let-expressions
+--
+--     let x=v1 in t2
+--  -------------------- (E-LetV)
+--      [x -> v1]t2
+--
+-- -----------------------------------------------------------------------------
 
 -- small-step normal order evaluation
 normalOrder1 :: Exp n a -> Exp n a
@@ -79,7 +86,7 @@ stepNO app@(App fun arg) = case stepNO fun of
 stepNO fun@(Lam n body) = case stepNO . fromScope $ body of
     Normalform _  ->  Normalform fun
     Reducible body' -> Reducible (Lam n (toScope body'))
-stepNO ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepNO (Let _ d e) = Reducible (instantiate1 d e)
 stepNO n = Normalform n
 
 -- -----------------------------------------------------------------------------
@@ -92,6 +99,14 @@ stepNO n = Normalform n
 --
 --  Computation rule:
 --  (\x.t12) v2 -> [x|->v2] t12 (E-AppAbs)
+--
+--  Evaluation rule for let-expressions
+--
+--     let x=v1 in t2
+--  -------------------- (E-LetV)
+--      [x -> v1]t2
+--
+-- -----------------------------------------------------------------------------
 
 -- small-step call-by-name evaluation
 callByName1 :: Exp n a -> Exp n a
@@ -112,7 +127,7 @@ stepCBN (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepCBN app@(App fun arg) = case stepCBN fun of
     Normalform _ -> Normalform app
     Reducible fun' -> Reducible (App fun' arg)
-stepCBN ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepCBN (Let _ d e) = Reducible (instantiate1 d e)
 stepCBN n = Normalform n
 
 -- -- -----------------------------------------------------------------------------
@@ -129,6 +144,12 @@ stepCBN n = Normalform n
 --
 --     Computation rule:
 --     (\x.t12) v2 -> [x|->v2] t12 (E-AppAbs)
+--
+--  -- Let-Expressions
+--
+--                t1 -> t1'
+--  ------------------------------------ (E-Let)
+--    let x=t1 in t2 -> let x=t1' in t2
 --
 -- -}
 
@@ -153,7 +174,10 @@ stepCBV app@(App fun@Lam{} arg) = case stepCBV arg of
 stepCBV app@(App fun arg) = case stepCBV fun of
     Normalform _ -> Normalform app
     Reducible fun' -> Reducible (App fun' arg)
-stepCBV ltc@Letrec{} = Reducible (instantiateLetrec ltc)
+stepCBV (Let _ d@Let{} e) = Reducible (instantiate1 d e)
+stepCBV lt@(Let n d e) = case stepCBV d of
+    Normalform _ -> Normalform lt
+    Reducible d' -> Reducible (Let n d' e)
 stepCBV n = Normalform n
 
 tracedEval :: forall n a . (Exp n a -> StepResult n a) -> Exp n a -> (Exp n a, [Exp n a])
