@@ -7,7 +7,7 @@ import Prelude
 
 import Text.PrettyPrint.HughesPJ
 
-import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Letrec))
+import Language.Lambda.Syntax.Named.Exp
 
 identifier :: Show a => a -> Doc
 identifier = text . tail . init . show
@@ -18,21 +18,18 @@ prettyP d (fun `App` arg) = maybeParens (d > aPrec) $
     prettyP aPrec fun <> space <> prettyP (succ aPrec) arg
   where
     aPrec = 9
-prettyP d (Lam name body) = maybeParens (d > lPrec) $
-    text "λ" <> identifier name <> text "." <> prettyP lPrec body
+prettyP d (Lam n b) = maybeParens (d > lPrec) $
+    text "λ" <> identifier n <> text "." <> prettyP lPrec b
   where
     lPrec = 6
-prettyP d (Letrec defs term) = maybeParens (d > ltcPrec) $
-    text "letrec "
-    <> (pDefs defs)
-    $$ text "in " <> prettyP ltcPrec term
+prettyP d (Let def term) = maybeParens (d > ltPrec) $
+    text "let "
+    <> (pDef def)
+    $$ text "in " <> prettyP ltPrec term
   where
-    pDefs :: Show a => [(a, Exp a)] -> Doc
-    pDefs = braces . cat . punctuate semi . fmap pDef
     pDef :: Show a => (a, Exp a) -> Doc
-    pDef (n, t) = identifier n <> text " = " <> prettyP ltcPrec t
-    ltcPrec = 10
-
+    pDef (n, t) = identifier n <> text " = " <> prettyP ltPrec t
+    ltPrec = 10
 
 prettyPrint :: Show a => Exp a -> String
 prettyPrint = render . prettyP 0
