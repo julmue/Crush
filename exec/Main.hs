@@ -18,7 +18,10 @@ data Mode = TraceNormalize | Trace | Normalize
 data Strategy = NormalOrder | CallByName | CallByValue
     deriving (Show, Read, Eq)
 
-data Options = Options Mode Strategy
+data Options = Options Mode Strategy Limit
+    deriving (Show, Read, Eq)
+
+data Limit = NoLimit | Limit Int
     deriving (Show, Read, Eq)
 
 main :: IO ()
@@ -38,7 +41,7 @@ getOpts = execParser $ info (helper <*> optionsP)
     )
 
 optionsP :: Parser Options
-optionsP = Options <$> modeP <*> strategyP
+optionsP = Options <$> modeP <*> strategyP <*> limitP
 
 modeP :: Parser Mode
 modeP = option auto
@@ -70,6 +73,17 @@ strategyP = option auto
              , text ("* " ++ show CallByName)
              ]
 
+limitP :: Parser Limit
+limitP = option auto
+    ( short 'l'
+   <> long "limit"
+   <> helpDoc (Just limitHelp)
+   <> value NoLimit
+   <> metavar "LIMIT"
+    )
+  where
+    limitHelp = text "Reduction step limit."
+
 data Output = Output
     { toStdout :: Maybe String
     , toStderr :: Maybe String
@@ -84,28 +98,37 @@ output (Output out err) = do
     op _ Nothing = return ()
 
 process :: Options -> String -> Output
-process (Options mode strategy) stream = case Parser.expression stream of
-    Left err        -> Output Nothing (Just (show err))
-    Right expr -> case mode of
-        TraceNormalize  -> Output (Just prettyE) (Just prettyDerivation)
-        Trace           -> Output (Just prettyDerivation) Nothing
-        Normalize       -> Output (Just prettyE') Nothing
-      where
-        (e,derivation) = trace strategy expr
-        prettyE = Pretty.prettyPrint e
-        prettyDerivation = unlines . fmap Pretty.prettyPrint $ derivation
-        e' = eval strategy $ expr
-        prettyE' = Pretty.prettyPrint e'
+process opts stream = case Parser.expression stream of
+    Left err    -> Output Nothing (Just (show err))
+    Right expr  -> processExpr opts expr
+
+processExpr :: Options -> Exp String -> Output
+processExpr (Options mode strategy limit) expr = case mode of
+    TraceNormalize  -> Output (Just (printRes smallStepResult)) (Just printDerivation)
+    Trace           -> Output (Just printDerivation) Nothing
+    Normalize       -> Output (Just (printRes bigStepResult)) Nothing
+  where
+    (smallStepResult,derivation) = case limit of
+        NoLimit -> trace strategy expr
+        Limit i -> traceLimit strategy i expr
+    bigStepResult = eval strategy expr
+    printRes = Pretty.prettyPrint
+    printDerivation = unlines $ fmap Pretty.prettyPrint derivation
 
 eval :: Strategy -> Exp String -> Exp String
-eval NormalOrder = BS.mkNormalOrder renderFresh
-eval CallByName = BS.mkCallByName renderFresh
-eval CallByValue = BS.mkCallByValue renderFresh
+eval NormalOrder    = BS.mkNormalOrder renderFresh
+eval CallByName     = BS.mkCallByName  renderFresh
+eval CallByValue    = BS.mkCallByValue renderFresh
 
 trace :: Strategy -> Exp String -> (Exp String, [Exp String])
-trace NormalOrder = SS.mkNormalOrderTraced renderFresh
-trace CallByName = SS.mkCallByNameTraced renderFresh
-trace CallByValue = SS.mkCallByValueTraced renderFresh
+trace NormalOrder   = SS.mkNormalOrderTraced renderFresh
+trace CallByName    = SS.mkCallByNameTraced  renderFresh
+trace CallByValue   = SS.mkCallByValueTraced renderFresh
+
+traceLimit :: Strategy -> Int -> Exp String -> (Exp String, [Exp String])
+traceLimit NormalOrder  = SS.mkNormalOrderTracedLimit renderFresh
+traceLimit CallByName   = SS.mkCallByNameTracedLimit  renderFresh
+traceLimit CallByValue  = SS.mkCallByValueTracedLimit renderFresh
 
 renderFresh :: BU.Fresh String -> String
 renderFresh f = BU.uname f ++ show (BU.fresh f)

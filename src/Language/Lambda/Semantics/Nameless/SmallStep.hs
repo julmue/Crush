@@ -5,12 +5,15 @@ module Language.Lambda.Semantics.Nameless.SmallStep
       normalOrder
     , normalOrder1
     , normalOrderTraced
+    , normalOrderTracedLimit
     , callByName
     , callByName1
     , callByNameTraced
+    , callByNameTracedLimit
     , callByValue
     , callByValue1
     , callByValueTraced
+    , callByValueTracedLimit
     ) where
 
 import Prelude hiding (lookup)
@@ -63,6 +66,9 @@ normalOrder = foldSR id normalOrder . stepNO
 normalOrderTraced :: Exp n a -> (Exp n a, [Exp n a])
 normalOrderTraced = tracedEval stepNO
 
+normalOrderTracedLimit :: Int -> Exp n a -> (Exp n a, [Exp n a])
+normalOrderTracedLimit = tracedEvalLimit stepNO
+
 stepNO :: Exp n a -> StepResult n a
 stepNO (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepNO app@(App fun arg) = case stepNO fun of
@@ -97,6 +103,9 @@ callByName = foldSR id callByName . stepCBN
 
 callByNameTraced :: Exp n a -> (Exp n a, [Exp n a])
 callByNameTraced = tracedEval stepCBN
+
+callByNameTracedLimit :: Int -> Exp n a -> (Exp n a, [Exp n a])
+callByNameTracedLimit = tracedEvalLimit stepCBN
 
 stepCBN :: Exp n a -> StepResult n a
 stepCBN (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
@@ -133,6 +142,9 @@ callByValue = foldSR id callByValue . stepCBV
 callByValueTraced :: Exp n a -> (Exp n a, [Exp n a])
 callByValueTraced = tracedEval stepCBV
 
+callByValueTracedLimit :: Int -> Exp n a -> (Exp n a, [Exp n a])
+callByValueTracedLimit = tracedEvalLimit stepCBV
+
 stepCBV :: Exp n a -> StepResult n a
 stepCBV (App (Lam _ body) arg@Lam{}) = Reducible (instantiate1 arg body)
 stepCBV app@(App fun@Lam{} arg) = case stepCBV arg of
@@ -151,3 +163,15 @@ tracedEval step expr = runWriter $ writer (expr,[expr]) >>= go
     go e = case step e of
         Normalform e' -> writer (e', mempty)
         Reducible e' -> writer (e', [e']) >>= go
+
+tracedEvalLimit :: forall n a . (Exp n a -> StepResult n a) -> Int -> Exp n a -> (Exp n a, [Exp n a])
+tracedEvalLimit step counter expr = runWriter $ writer (expr,[expr]) >>= go counter
+  where
+    go :: Int -> Exp n a -> Writer [Exp n a] (Exp n a)
+    go i e =
+        if i > 0
+        then case step e of
+            Normalform e' -> writer (e', mempty)
+            Reducible e' -> writer (e', [e']) >>= go (pred i)
+        else writer (e, mempty)
+
