@@ -145,6 +145,7 @@ arithmeticTests = testGroup "ArithmeticTests"
     , pow_Tests
     , leqnat_Tests
     , eqnat_Tests
+    , fac_Tests
     ]
 
 iszro_Tests = testGroup "iszro_Tests"
@@ -273,6 +274,20 @@ eqnat_Tests = testGroup "eqnat_Tests"
                      conclusion = eqnat_ # cn # cm
                in normalOrder (imp_ # premis # conclusion) == tru_
     ]
+
+fac_Tests = testGroup "fac_Tests"
+    [ testCase "fac 0 1" $
+        normalOrder (fac_ # zro_) @=? one_
+    , testCase "fac 1 1" $
+        normalOrder (fac_ # one_) @=? one_
+    , testCase "fac 2 2" $
+        normalOrder (fac_ # n2_) @=? (normalOrder n2_)
+   , scProp "fac_ golden" 3 $
+       \n -> let cn = SC.getNonNegative n
+             in normalOrder (fac_ # (unsafeFromInt cn)) == unsafeFromInt (fac cn)
+    ]
+  where
+    fac x = if x == 0 then 1 else x * fac (pred x)
 
 -- -----------------------------------------------------------------------------
 letrecTests = testGroup "LetrecTests"

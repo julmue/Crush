@@ -24,6 +24,7 @@ module Language.Lambda.Syntax.Named.Testdata
     , mlt_
     , pow_
     , leqnat_
+    , fac_
       -- numbers
     , zro_
     , one_
@@ -131,6 +132,11 @@ pow_ :: Exp String
 pow_ = "b" ! "e" ! if_ # (iszro_ # Var"e") #
                    one_ #
                    (mlt_ # Var"b" # (pow_ # Var"b" # (prd_ # Var "e")))
+
+fac_ :: Exp String
+fac_ = "x" ! if_ # (iszro_ # Var"x") #
+             one_ #
+             (mlt_ # Var"x" # (fac_ # (prd_ # Var"x")))
 
 --relation
 leqnat_ :: Exp String
