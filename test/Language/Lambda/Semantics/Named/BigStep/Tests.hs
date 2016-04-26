@@ -290,9 +290,9 @@ fac_Tests = testGroup "fac_Tests"
     fac x = if x == 0 then 1 else x * fac (pred x)
 
 -- -----------------------------------------------------------------------------
-letrecTests = testGroup "LetrecTests"
-    [ testCase "Letrec 1 (identity)" $
-        let ltc = Letrec [("i", i_)] (Var"i")
+letrecTests = testGroup "Let Tests"
+    [ testCase "Let 1 (identity)" $
+        let ltc = Let ("i", i_) (Var"i")
         in normalOrder ltc @=? i_
     ]
 
