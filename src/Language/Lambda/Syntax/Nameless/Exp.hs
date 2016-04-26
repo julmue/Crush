@@ -9,7 +9,7 @@
 module Language.Lambda.Syntax.Nameless.Exp (
       Alpha (Alpha)
     , runAlpha
-    , Exp (Var, App, Lam, Letrec)
+    , Exp (Var, App, Lam, Let)
 --    , bound
 --    , free
 --    , fold
@@ -17,9 +17,10 @@ module Language.Lambda.Syntax.Nameless.Exp (
 --    , mapAlpha
     , (#)
     , (!)
-    , lam
-    , gLam
-    , letrec
+    , lam_
+    , gLam_
+    , let_
+    , gLet_
 ) where
 
 import Control.Monad (ap)
@@ -48,7 +49,7 @@ data Exp n a =
     -- alpha scope
     | Lam (Alpha n) (Scope () (Exp n) a)
     -- alphas defs scope
-    | Letrec (Alpha [n]) [Scope Int (Exp n) a] (Scope Int (Exp n) a)
+    | Let (Alpha n) (Exp n a) (Scope () (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
 
@@ -62,7 +63,7 @@ instance Monad (Exp n) where
     (Var a) >>= g = g a
     (f `App` a) >>= g = (f >>= g) `App` (a >>= g)
     (Lam n s) >>= g = Lam n (s >>>= g)
-    (Letrec ns ds e) >>= g = Letrec ns (map (>>>= g) ds) (e >>>= g)
+    (Let ns d e) >>= g = Let ns (d >>= g) (e >>>= g)
 
 instance Applicative (Exp n) where
     pure = Var
@@ -100,21 +101,18 @@ infixl 9 #
 infixr 6 !
 
 (!) :: Eq a => a -> Exp a a -> Exp a a
-(!) = lam
+(!) = lam_
 
-lam :: Eq a => a -> Exp a a -> Exp a a
+lam_ :: Eq a => a -> Exp a a -> Exp a a
+lam_ a e = gLam_ a id e
 
-lam a e = gLam a id e
-
-gLam :: Eq a => a -> (a -> n) -> Exp n a -> Exp n a
-gLam a f e = Lam (Alpha (f a)) (abstract1 a e)
+gLam_ :: Eq a => a -> (a -> n) -> Exp n a -> Exp n a
+gLam_ a f e = Lam (Alpha (f a)) (abstract1 a e)
 
 -- | a smart constructor for let bindings
-letrec :: Eq a => [(a, Exp a a)] -> Exp a a -> Exp a a
-letrec [] b = b
-letrec ds e = Letrec (Alpha names) (map abstr bodies) (abstr e)
-   where
-     abstr = abstract (`elemIndex` names)
-     names = map fst ds
-     bodies = map snd ds
+let_ :: Eq a => (a, Exp a a) -> Exp a a -> Exp a a
+let_ a e = gLet_ a id e
+
+gLet_ :: Eq a => (a, Exp n a) -> (a -> n) -> Exp n a -> Exp n a
+gLet_ (a,d) f e = Let (Alpha (f a)) d (abstract1 a e)
 

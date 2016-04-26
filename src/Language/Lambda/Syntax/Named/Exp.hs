@@ -1,5 +1,3 @@
--- {-# OPTIONS_GHC -Wall #-}
--- {-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveFunctor #-}
@@ -8,7 +6,7 @@
 
 module Language.Lambda.Syntax.Named.Exp
     (
-      Exp (Var,App,Lam,Letrec)
+      Exp (Var,App,Lam,Let)
 --    , bound
 --    , free
     , uname
@@ -25,8 +23,7 @@ import Data.Foldable
 import Data.Traversable
 #endif
 
-import Bound (Scope(..),instantiate)
-import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap, freshify)
+import Bound.Unwrap (Fresh, Unwrap, unwrap, runUnwrap)
 import Test.QuickCheck.Arbitrary
 import Test.QuickCheck.Gen
 
@@ -37,36 +34,36 @@ import qualified Language.Lambda.Syntax.Nameless.Exp as NL
 
 data Exp a
     = Var a
-    | App (Exp a) (Exp a)                   -- fun arg
-    | Lam a (Exp a)                         -- param body
-    | Letrec [(a, Exp a)] (Exp a)           -- defs exp
+    | App (Exp a) (Exp a)
+    | Lam a (Exp a)
+    | Let (a, Exp a) (Exp a)
     deriving (Read, Show, Functor, Foldable, Traversable)
 
 fold ::
        (a -> n a)
     -> (n a -> n a -> n a)
     -> (a -> n a -> n a)
-    -> ([(a, n a)] -> n a -> n a)
+    -> ((a, n a) -> n a -> n a)
     -> Exp a -> n a
 fold v _ _ _ (Var n) = v n
-fold v a l ltc (fun `App` arg) = a (fold v a l ltc fun) (fold v a l ltc arg)
-fold v a l ltc (Lam n body) = l n (fold v a l ltc body)
-fold v a l ltc (Letrec defs term) = ltc ((fmap . fmap) g defs) (g term)
+fold v a l lt (fun `App` arg) = a (fold v a l lt fun) (fold v a l lt arg)
+fold v a l lt (Lam n body) = l n (fold v a l lt body)
+fold v a l lt (Let def term) = lt (fmap g def) (g term)
   where
-    g = fold v a l ltc
+    g = fold v a l lt
 
 gFold ::
        (m a -> n b)
     -> (n b -> n b -> n b)
     -> (m a -> n b -> n b)
-    -> ([(m a, n b)] -> n b -> n b)
+    -> ((m a, n b) -> n b -> n b)
     -> Exp (m a) -> n b
 gFold v _ _ _ (Var n) = v n
-gFold v a l ltc (fun `App` arg) = a (gFold v a l ltc fun) (gFold v a l ltc arg)
-gFold v a l ltc (Lam n body) = l n (gFold v a l ltc body)
-gFold v a l ltc (Letrec defs expr) = ltc ((fmap . fmap) g defs) (g expr)
+gFold v a l lt (fun `App` arg) = a (gFold v a l lt fun) (gFold v a l lt arg)
+gFold v a l lt (Lam n body) = l n (gFold v a l lt body)
+gFold v a l lt (Let defs expr) = lt (fmap g defs) (g expr)
   where
-    g = gFold v a l ltc
+    g = gFold v a l lt
 
 infixl 9 #
 (#) :: Exp a -> Exp a -> Exp a
@@ -80,7 +77,7 @@ instance Eq a => Eq (Exp a) where
      l1 == l2 = uname l1 == uname l2
 
 uname :: Eq a => Exp a -> NL.Exp a a
-uname = fold NL.Var NL.App NL.lam NL.letrec
+uname = fold NL.Var NL.App NL.lam_ NL.let_
 
 name :: Eq a => NL.Exp (Fresh a) (Fresh a) -> Exp (Fresh a)
 name = runUnwrap . go
@@ -91,19 +88,10 @@ name = runUnwrap . go
     go (NL.Lam (NL.Alpha n) scope) = do
         (n', e) <- unwrap n scope
         Lam n' <$> go e
-    go (NL.Letrec (NL.Alpha ns) defs scope) = do
-        ns' <- sequence . fmap freshify $ ns
-        defbodies <- sequence . fmap (go . inst ns') $ defs
-        scope' <- go . inst ns'$ scope
-        let defs' = zip ns' defbodies
-        return (Letrec defs' scope')
-      where
-        inst :: [Fresh a]
-             -> Scope Int (NL.Exp (Fresh a)) (Fresh a)
-             -> NL.Exp (Fresh a) (Fresh a)
-        inst names = instantiate (dict names)
-        dict :: [Fresh a] -> Int -> NL.Exp (Fresh a) (Fresh a)
-        dict names i = NL.Var (names !! i)
+    go (NL.Let (NL.Alpha n) d scope) = do
+        d' <- go d
+        (n', e) <- unwrap n scope
+        (Let (n', d')) <$> go e
 
 -- -----------------------------------------------------------------------------
 -- random data generation
