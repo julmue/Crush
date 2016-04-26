@@ -1,11 +1,7 @@
 module Language.Lambda.Syntax.Named.Parser
     (
       expression
-    , definition
-    , definitions
-    , expr
-    , def
-    , defs
+    , exprP
     ) where
 
 {-
@@ -14,14 +10,10 @@ module Language.Lambda.Syntax.Named.Parser
 <expr> = <variable>
        | <expr> <expr>
        | \<var>.<expr>
-       | letrec { <var> = <expr> ;
-                  ...
-                  <var> = <expr> }
-          in <expr>
+       | let <expr> in <expr>
        | (<expr>)
 
 Todo: constants (Integers, Chars, Strings, ...)
-
 -}
 
 import Control.Applicative
@@ -31,13 +23,13 @@ import qualified Text.Parsec.String as S
 import Text.Parsec.Language as L
 import qualified Text.Parsec.Token as T
 
-import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Letrec))
+import Language.Lambda.Syntax.Named.Exp (Exp(Var,App,Lam,Let))
 
 -- lexer
 lexer :: T.TokenParser ()
 lexer = T.makeTokenParser style
   where
-    keys = ["letrec", "in"]
+    keys = ["let", "in"]
     ops = ["\\", "λ", ".", ";", "="]
     style = emptyDef
         { T.reservedNames = keys
@@ -48,12 +40,6 @@ lexer = T.makeTokenParser style
         , T.commentStart = "{-"
         , T.commentEnd  = "-}"
         }
-
-semi :: S.Parser String
-semi = T.semi lexer
-
-braces :: S.Parser a -> S.Parser a
-braces = T.braces lexer
 
 parens :: S.Parser a -> S.Parser a
 parens = T.parens lexer
@@ -68,53 +54,43 @@ identifier :: S.Parser String
 identifier = T.identifier lexer
 
 -- parser
-variable :: S.Parser (Exp String)
-variable = Var <$> identifier
+variableP :: S.Parser (Exp String)
+variableP = Var <$> identifier
 
-atom :: S.Parser (Exp String)
-atom = variable <|> parens expr
+atomP :: S.Parser (Exp String)
+atomP = variableP <|> parens exprP
 
-app :: S.Parser (Exp String)
-app = atom `P.chainl1` (pure App)
+appP :: S.Parser (Exp String)
+appP = atomP `P.chainl1` (pure App)
 
-lam :: S.Parser (Exp String)
-lam = do
+lamP :: S.Parser (Exp String)
+lamP = do
     (reservedOp "\\" <|> reservedOp "λ")
     n <- identifier
     -- "." this is a hack because strange parsec behaviour with reservedOp "."
     _ <- P.char '.'
     P.spaces
     --
-    e <- expr
+    e <- exprP
     return (Lam n e)
 
-letrec :: S.Parser (Exp String)
-letrec = do
-    reserved "letrec"
-    ds <- defs
+letP :: S.Parser (Exp String)
+letP = do
+    reserved "let"
+    d <- defP
     reserved "in"
-    term <- expr
-    return (Letrec ds term)
+    term <- exprP
+    return (Let d term)
 
-def :: S.Parser (String, Exp String)
-def = do
+defP :: S.Parser (String, Exp String)
+defP = do
     n <- identifier
     reservedOp "="
-    term <- expr
+    term <- exprP
     return (n, term)
 
-defs :: S.Parser [(String, Exp String)]
-defs = braces (def `P.sepBy` semi)
-
-expr :: S.Parser (Exp String)
-expr = letrec <|> lam <|> app <|> atom
+exprP :: S.Parser (Exp String)
+exprP = letP <|> lamP <|> appP <|> atomP
 
 expression :: String -> Either P.ParseError (Exp String)
-expression = P.parse expr "ExpParser"
-
-definition :: String -> Either P.ParseError (String, Exp String)
-definition = P.parse def "ExpParser"
-
-definitions :: String -> Either P.ParseError [(String, Exp String)]
-definitions = P.parse defs "ExpParser"
-
+expression = P.parse exprP "ExpParser"
