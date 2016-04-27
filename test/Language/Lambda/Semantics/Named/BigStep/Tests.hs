@@ -20,8 +20,8 @@ import Language.Lambda.Syntax.Named.Exp
 import Language.Lambda.Semantics.Named.BigStep
 import Language.Lambda.Syntax.Named.Testdata
 
-renderFresh :: BU.Fresh String -> String
-renderFresh f = BU.uname f ++ show (BU.fresh f)
+renderFresh :: Printer String
+renderFresh (n,i) = n ++ show i
 
 normalOrder = mkNormalOrder renderFresh
 callByValue = mkCallByValue renderFresh
