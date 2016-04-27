@@ -95,6 +95,7 @@ imp_ = "p" ! "q" ! or_ # (not_ # Var"p") # Var"q"
 iff_ :: Exp String
 iff_ =  "p" ! "q" ! and_ # (imp_ # Var"p" # Var"q") # (imp_ # Var"q" # Var"p")
 
+
 -- arithmetic
 
 zro_ :: Exp String
@@ -138,17 +139,23 @@ fac_ = "x" ! if_ # (iszro_ # Var"x") #
              one_ #
              (mlt_ # Var"x" # (fac_ # (prd_ # Var"x")))
 
+
 --relation
+
 leqnat_ :: Exp String
 leqnat_ = "x" ! "y" ! iszro_ # (sub_ # Var"x" # Var"y")
 
+
 -- equality
+
 eqbool_ :: Exp String
 eqbool_ = iff_
 
 eqnat_ :: Exp String
 eqnat_ = "x" ! "y" ! and_ # (leqnat_ # Var"x" # Var"y") # (leqnat_ # Var"y" # Var"x")
 
+
+-- numbers
 
 n2_ :: Exp String
 n2_ = scc_ # one_

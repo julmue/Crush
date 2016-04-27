@@ -12,10 +12,6 @@ import Language.Lambda.Semantics.Named.Internal
 import qualified Language.Lambda.Syntax.Named.Exp as N
 import qualified Language.Lambda.Semantics.Nameless.BigStep as NLB
 
--- -----------------------------------------------------------------------------
--- computation
-
-
 mkNormalOrder :: Eq a => Printer a -> N.Exp a -> N.Exp a
 mkNormalOrder p = eval p NLB.normalOrder
 

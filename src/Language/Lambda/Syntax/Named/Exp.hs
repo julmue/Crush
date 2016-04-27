@@ -28,9 +28,6 @@ import Test.QuickCheck.Gen
 
 import qualified Language.Lambda.Syntax.Nameless.Exp as NL
 
--- -----------------------------------------------------------------------------
--- named lambda terms
-
 data Exp a
     = Var a
     | App (Exp a) (Exp a)
@@ -83,17 +80,14 @@ name = runUnwrap . go
   where
     go :: NL.Exp (Fresh a) (Fresh a) -> Unwrap (Exp (Fresh a))
     go (NL.Var n) = return (Var n)
-    go (fun `NL.App` arg) = App <$> (go fun) <*> (go arg)
+    go (fun `NL.App` arg) = App <$> go fun <*> go arg
     go (NL.Lam (NL.Alpha n) scope) = do
         (n', e) <- unwrap n scope
         Lam n' <$> go e
     go (NL.Let (NL.Alpha n) d scope) = do
         d' <- go d
         (n', e) <- unwrap n scope
-        (Let (n', d')) <$> go e
-
--- -----------------------------------------------------------------------------
--- random data generation
+        Let (n', d') <$> go e
 
 genExpr :: Arbitrary a => Int -> Gen (Exp a)
 genExpr depth
