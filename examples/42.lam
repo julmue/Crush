@@ -17,4 +17,3 @@ let two    = scc one in
 let n3c    = scc (scc one) in
 let n6c    = add n3c n3c in
 mlt (scc n6c) n6c
-

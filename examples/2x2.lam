@@ -14,4 +14,3 @@ let iszro  = λn.n (λx.fls) tru in
 let add    = fix (λradd.λm.λn.if (iszro n) m (scc (radd m (prd n)))) in
 let mlt    = fix (λrmlt.λm.λn.if (iszro m) zro (add n (rmlt (prd m) n))) in
 mlt n2c n2c 
-

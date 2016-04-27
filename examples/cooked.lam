@@ -26,8 +26,3 @@ let n37 = Succ (mul n6 n6) in
 let n703 = sumto n37 in
 let n720 = fac n6 in
 eqnat n720 (add n703 n17)
-
-
-
-
-
