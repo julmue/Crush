@@ -36,7 +36,7 @@ getOpts = execParser $ info (helper <*> optionsP)
     <>  header "lambda - interpreter for the untyped lambda calculus"
     <>  progDesc "Normalize and trace a lambda expression, \
                  \reading the expression from standard input, writing the \
-                 \expression type to standard error, and writing \
+                 \computation trace to standard error, and writing \
                  \the normalized term to standard output."
     )
 
