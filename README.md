@@ -85,7 +85,7 @@ Then pipe the file to the executable:
 
 Now you should see a surprisingly huge trace 
 (were each line is one intermediate result of the reduction process)
-and as a final result:
+and as a final result the number four in Church-encoding:
 
     λf1.λx2.f1 (f1 (f1 (f1 x2)))
 
