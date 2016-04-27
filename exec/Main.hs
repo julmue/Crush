@@ -33,7 +33,7 @@ main = do
 getOpts :: IO Options
 getOpts = execParser $ info (helper <*> optionsP)
     (   fullDesc
-    <>  header "lambda - interpreter for the untyped lambda calculus"
+    <>  header "crush - interpreter for the untyped lambda calculus"
     <>  progDesc "Normalize and trace a lambda expression, \
                  \reading the expression from standard input, writing the \
                  \computation trace to standard error, and writing \
