@@ -9,9 +9,9 @@ module Language.Lambda.Syntax.Nameless.Exp (
     , Exp (Var, App, Lam, Let)
 --    , bound
 --    , free
---    , fold
---    , mapExp
---    , mapAlpha
+    , fold
+    , mapExp
+    , mapAlpha
     , (#)
     , (!)
     , lam_
@@ -23,6 +23,7 @@ module Language.Lambda.Syntax.Nameless.Exp (
 import Control.Monad (ap)
 
 import Bound
+import Bound.Scope
 import Prelude.Extras
 
 data Alpha n = Alpha { runAlpha :: n }
@@ -33,11 +34,8 @@ instance Eq n => Eq (Alpha n) where
 
 data Exp n a =
       Var !a
-    -- fun arg
     | App (Exp n a) (Exp n a)
-    -- alpha scope
     | Lam (Alpha n) (Scope () (Exp n) a)
-    -- alphas defs scope
     | Let (Alpha n) (Exp n a) (Scope () (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
 
@@ -57,28 +55,29 @@ instance Applicative (Exp n) where
     pure = Var
     (<*>) = ap
 
--- fold :: forall n b f .
---        (forall a . a -> f a)
---     -> (forall a . f a -> f a -> f a)
---     -> (forall a . Alpha n -> Scope () f a -> f a)
---     -> (forall a . Alpha [n] -> [Scope Int f a] -> (Scope Int f a) -> f a)
---     -> (Exp n) b -> f b
--- fold v _ _ _ (Var n) = v n
--- fold v a l lrc (fun_ `App` arg_) = a (fold v a l lrc fun_) (fold v a l lrc arg_)
--- fold v a l lrc (Lam alpha_ scope_) = l alpha_ hScope
---   where hScope = (hoistScope (fold v a l lrc ) scope_)
--- fold v a l lrc (Letrec defs exp) = lrc hDefs hExp
---   where
---     hDefs = hoistScope (fold v a l lrc) <$> defs
---     hExp = hoistScope (fold v a l lrc) exp
+fold :: forall n b f .
+       (forall a . a -> f a)
+    -> (forall a . f a -> f a -> f a)
+    -> (forall a . Alpha n -> Scope () f a -> f a)
+    -> (forall a . Alpha n -> Exp n a -> Scope () f a -> f a)
+    -> (Exp n) b -> f b
+fold v _ _ _ (Var n) = v n
+fold v a l lt (fun `App` arg) = a (fold v a l lt fun) (fold v a l lt arg)
+fold v a l lt (Lam alpha scope) = l alpha scope'
+  where
+    scope' = (hoistScope (fold v a l lt) scope)
+fold v a l lt (Let alpha def scope) = lt alpha def scope'
+  where
+    scope' = hoistScope (fold v a l lt) scope
 
--- mapAlpha :: (n -> m) -> (Exp n) a -> (Exp m) a
--- mapAlpha f = fold Var App l Letrec
---   where
---     l a s = Lam (f <$> a) s
---
--- mapExp :: (n -> m) -> (a -> b) -> Exp n a -> Exp m b
--- mapExp f g e = mapAlpha f . fmap g $ e
+mapAlpha :: (n -> m) -> (Exp n) a -> (Exp m) a
+mapAlpha f = fold Var App l lt
+  where
+    l a s = Lam (f <$> a) s
+    lt a e s = Let (f <$> a) (mapAlpha f e) s
+
+mapExp :: (n -> m) -> (a -> b) -> Exp n a -> Exp m b
+mapExp f g e = mapAlpha f . fmap g $ e
 
 -- | a smart constructor for abstractions
 infixl 9 #
