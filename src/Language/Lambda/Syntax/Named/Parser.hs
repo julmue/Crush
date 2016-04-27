@@ -53,6 +53,9 @@ reservedOp = T.reservedOp lexer
 identifier :: S.Parser String
 identifier = T.identifier lexer
 
+whiteSpace :: S.Parser ()
+whiteSpace = T.whiteSpace lexer
+
 -- parser
 variableP :: S.Parser (Exp String)
 variableP = Var <$> identifier
@@ -90,7 +93,9 @@ defP = do
     return (n, term)
 
 exprP :: S.Parser (Exp String)
-exprP = letP <|> lamP <|> appP <|> atomP
+exprP = do
+    whiteSpace
+    (letP <|> lamP <|> appP <|> atomP)
 
 expression :: String -> Either P.ParseError (Exp String)
 expression = P.parse exprP "ExpParser"
