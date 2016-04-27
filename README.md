@@ -48,9 +48,9 @@ by issuing the `--limit Limit` flag where limit is a number (e.g. `--limit 100` 
 The supported syntax is the lambda calculus with support for (non-recursive) *let-expressions*.
 
     Λ := x                      -- Variable 
-         | Λ Λ                   -- Application
+         | Λ Λ                  -- Application
          | λ x Λ                -- Abstraction
-         | let x = Λ in Λ     -- let-Expression
+         | let x = Λ in Λ       -- let-Expression
 
 Some examples for valid lambda terms:  
 
