@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Char(isDigit)
 import System.IO (hPutStrLn, stderr, stdout)
 
 import qualified Bound.Unwrap as BU
@@ -12,13 +13,13 @@ import qualified Language.Lambda.Syntax.Named.Pretty as Pretty
 import qualified Language.Lambda.Semantics.Named.BigStep as BS
 import qualified Language.Lambda.Semantics.Named.SmallStep as SS
 
+data Options = Options Mode Strategy Limit
+    deriving (Show, Read, Eq)
+
 data Mode = TraceNormalize | Trace | Normalize
     deriving (Show, Read, Eq)
 
 data Strategy = NormalOrder | CallByName | CallByValue
-    deriving (Show, Read, Eq)
-
-data Options = Options Mode Strategy Limit
     deriving (Show, Read, Eq)
 
 data Limit = NoLimit | Limit Int
@@ -74,7 +75,7 @@ strategyP = option auto
              ]
 
 limitP :: Parser Limit
-limitP = option auto
+limitP = option (eitherReader parseLimit)
     ( short 'l'
    <> long "limit"
    <> helpDoc (Just limitHelp)
@@ -83,6 +84,13 @@ limitP = option auto
     )
   where
     limitHelp = text "Reduction step limit."
+    parseLimit :: String -> Either String Limit
+    parseLimit s
+        | s == "UnLimit" = Right NoLimit
+        | otherwise = if and (map isDigit s)
+                      then Right (Limit (read s))
+                      else Left s
+
 
 data Output = Output
     { toStdout :: Maybe String
