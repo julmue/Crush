@@ -127,7 +127,11 @@ stepCBN (App (Lam _ body) arg) = Reducible (instantiate1 arg body)
 stepCBN app@(App fun arg) = case stepCBN fun of
     Normalform _ -> Normalform app
     Reducible fun' -> Reducible (App fun' arg)
-stepCBN (Let _ d e) = Reducible (instantiate1 d e)
+--stepCBN (Let _ d e) = Reducible (instantiate1 d e)
+stepCBN (Let _ d@Let{} e) = Reducible (instantiate1 d e)
+stepCBN lt@(Let n d e) = case stepCBV d of
+    Normalform _ -> Normalform lt
+    Reducible d' -> Reducible (Let n d' e)
 stepCBN n = Normalform n
 
 -- -- -----------------------------------------------------------------------------

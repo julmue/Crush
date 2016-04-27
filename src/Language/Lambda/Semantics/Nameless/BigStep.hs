@@ -20,7 +20,8 @@ normalOrder (Lam n s) = Lam n . toScope . normalOrder . fromScope $ s
 normalOrder (f `App` a) = case callByName f of
     Lam _ b -> normalOrder (instantiate1 a b)
     f' -> normalOrder f' `App` normalOrder a
-normalOrder (Let _ d s) = normalOrder (instantiate1 d s)
+normalOrder (Let _ d@Lam{} s) = normalOrder (instantiate1 d s)
+normalOrder (Let n d s) = normalOrder (Let n (normalOrder d) s)
 
 -- weak head normal form
 callByName :: forall n a . Exp n a -> Exp n a
@@ -29,7 +30,8 @@ callByName val@Lam{} = val
 callByName (fun `App` arg) = case callByName fun of
     Lam _ body -> callByName (instantiate1 arg body)
     term -> term `App` arg
-callByName (Let _ d s) = normalOrder (instantiate1 d s)
+callByName (Let _ d@Lam{} s) = normalOrder (instantiate1 d s)
+callByName (Let n d s) = normalOrder (Let n (normalOrder d) s)
 
 -- head normal form
 callByValue :: forall n a . Exp n a -> Exp n a
