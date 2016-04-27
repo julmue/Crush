@@ -25,7 +25,6 @@ import qualified Text.Parsec.Token as T
 
 import Language.Lambda.Syntax.Named.Exp
 
--- lexer
 lexer :: T.TokenParser ()
 lexer = T.makeTokenParser style
   where
@@ -56,7 +55,6 @@ identifier = T.identifier lexer
 whiteSpace :: S.Parser ()
 whiteSpace = T.whiteSpace lexer
 
--- parser
 variableP :: S.Parser (Exp String)
 variableP = Var <$> identifier
 
@@ -64,11 +62,11 @@ atomP :: S.Parser (Exp String)
 atomP = variableP <|> parens exprP
 
 appP :: S.Parser (Exp String)
-appP = atomP `P.chainl1` (pure App)
+appP = atomP `P.chainl1` pure App
 
 lamP :: S.Parser (Exp String)
 lamP = do
-    (reservedOp "\\" <|> reservedOp "λ")
+    reservedOp "\\" <|> reservedOp "λ"
     n <- identifier
     -- "." this is a hack because strange parsec behaviour with reservedOp "."
     _ <- P.char '.'
@@ -95,7 +93,7 @@ defP = do
 exprP :: S.Parser (Exp String)
 exprP = do
     whiteSpace
-    (letP <|> lamP <|> appP <|> atomP)
+    letP <|> lamP <|> appP <|> atomP
 
 expression :: String -> Either P.ParseError (Exp String)
 expression = P.parse exprP "ExpParser"

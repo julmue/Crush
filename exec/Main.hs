@@ -30,7 +30,7 @@ main = do
     input <- getContents
     output . process opts $ input
 
-getOpts :: IO (Options)
+getOpts :: IO Options
 getOpts = execParser $ info (helper <*> optionsP)
     (   fullDesc
     <>  header "lambda - interpreter for the untyped lambda calculus"
@@ -86,10 +86,9 @@ limitP = option (eitherReader parseLimit)
     parseLimit :: String -> Either String Limit
     parseLimit s
         | s == "UnLimit" = Right NoLimit
-        | otherwise = if and (map isDigit s)
+        | otherwise = if all isDigit s
                       then Right (Limit (read s))
                       else Left s
-
 
 data Output = Output
     { toStdout :: Maybe String

@@ -1,10 +1,7 @@
-{-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -fwarn-incomplete-patterns #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Language.Lambda.Syntax.Nameless.Exp (
       Alpha (Alpha)
@@ -28,18 +25,11 @@ import Control.Monad (ap)
 import Bound
 import Prelude.Extras
 
--- -----------------------------------------------------------------------------
--- nameless representation
-
--- the name of the binder that got abstracted;
--- this information is not relevant for alpha-equivalence
-
 data Alpha n = Alpha { runAlpha :: n }
     deriving (Show, Read, Functor, Foldable, Traversable)
 
 instance Eq n => Eq (Alpha n) where
     _ == _ = True
-
 
 data Exp n a =
       Var !a
@@ -50,7 +40,6 @@ data Exp n a =
     -- alphas defs scope
     | Let (Alpha n) (Exp n a) (Scope () (Exp n) a)
     deriving (Eq,Show,Read,Functor,Foldable,Traversable)
-
 
 instance (Eq n) => Eq1 (Exp n)
 instance (Show n) => Show1 (Exp n)
@@ -94,7 +83,7 @@ instance Applicative (Exp n) where
 -- | a smart constructor for abstractions
 infixl 9 #
 
-(#) :: (Exp n a) -> (Exp n a) -> (Exp n a)
+(#) :: Exp n a -> Exp n a -> Exp n a
 (#) = App
 
 infixr 6 !
@@ -103,15 +92,14 @@ infixr 6 !
 (!) = lam_
 
 lam_ :: Eq a => a -> Exp a a -> Exp a a
-lam_ a e = gLam_ a id e
+lam_ a = gLam_ a id
 
 gLam_ :: Eq a => a -> (a -> n) -> Exp n a -> Exp n a
 gLam_ a f e = Lam (Alpha (f a)) (abstract1 a e)
 
 -- | a smart constructor for let bindings
 let_ :: Eq a => (a, Exp a a) -> Exp a a -> Exp a a
-let_ a e = gLet_ a id e
+let_ a = gLet_ a id
 
 gLet_ :: Eq a => (a, Exp n a) -> (a -> n) -> Exp n a -> Exp n a
 gLet_ (a,d) f e = Let (Alpha (f a)) d (abstract1 a e)
-
