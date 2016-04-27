@@ -3,7 +3,6 @@ module Main where
 import Data.Char(isDigit)
 import System.IO (hPutStrLn, stderr, stdout)
 
-import qualified Bound.Unwrap as BU
 import Options.Applicative
 import Text.PrettyPrint.ANSI.Leijen (text, vcat, hardline)
 
@@ -138,6 +137,6 @@ traceLimit NormalOrder  = SS.mkNormalOrderTracedLimit renderFresh
 traceLimit CallByName   = SS.mkCallByNameTracedLimit  renderFresh
 traceLimit CallByValue  = SS.mkCallByValueTracedLimit renderFresh
 
-renderFresh :: BU.Fresh String -> String
-renderFresh f = BU.uname f ++ show (BU.fresh f)
+renderFresh :: (String, Int) -> String
+renderFresh (n,i) = n ++ show i
 

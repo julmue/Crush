@@ -12,48 +12,47 @@ module Language.Lambda.Semantics.Named.SmallStep
     , mkCallByValue1
     , mkCallByValueTraced
     , mkCallByValueTracedLimit
+    , Printer
     ) where
 
 import Prelude hiding (lookup)
-
-import qualified Bound.Unwrap as BU
 
 import Language.Lambda.Semantics.Named.Internal
 import qualified Language.Lambda.Syntax.Named.Exp as N
 import qualified Language.Lambda.Semantics.Nameless.SmallStep as NLB
 
-mkNormalOrder :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkNormalOrder g = eval g NLB.normalOrder
+mkNormalOrder :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkNormalOrder p = eval p NLB.normalOrder
 
-mkNormalOrder1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkNormalOrder1 g = eval g NLB.normalOrder1
+mkNormalOrder1 :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkNormalOrder1 p = eval p NLB.normalOrder1
 
-mkNormalOrderTraced :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkNormalOrderTraced g = evalTraced g NLB.normalOrderTraced
+mkNormalOrderTraced :: Eq a => Printer a -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkNormalOrderTraced p = evalTraced p NLB.normalOrderTraced
 
-mkNormalOrderTracedLimit :: Eq a => (BU.Fresh a -> a) -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkNormalOrderTracedLimit g i = evalTraced g (NLB.normalOrderTracedLimit i)
+mkNormalOrderTracedLimit :: Eq a => Printer a -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkNormalOrderTracedLimit p i = evalTraced p (NLB.normalOrderTracedLimit i)
 
-mkCallByName :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkCallByName g = eval g NLB.callByName
+mkCallByName :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkCallByName p = eval p NLB.callByName
 
-mkCallByName1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkCallByName1 g = eval g NLB.callByName1
+mkCallByName1 :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkCallByName1 p = eval p NLB.callByName1
 
-mkCallByNameTraced :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkCallByNameTraced g = evalTraced g NLB.callByNameTraced
+mkCallByNameTraced :: Eq a => Printer a -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkCallByNameTraced p = evalTraced p NLB.callByNameTraced
 
-mkCallByNameTracedLimit :: Eq a => (BU.Fresh a -> a) -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkCallByNameTracedLimit g i = evalTraced g (NLB.callByNameTracedLimit i)
+mkCallByNameTracedLimit :: Eq a => Printer a -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkCallByNameTracedLimit p i = evalTraced p (NLB.callByNameTracedLimit i)
 
-mkCallByValue :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkCallByValue g = eval g NLB.callByValue
+mkCallByValue :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkCallByValue p = eval p NLB.callByValue
 
-mkCallByValue1 :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> N.Exp a
-mkCallByValue1 g = eval g NLB.callByValue1
+mkCallByValue1 :: Eq a => Printer a -> N.Exp a -> N.Exp a
+mkCallByValue1 p = eval p NLB.callByValue1
 
-mkCallByValueTraced :: Eq a => (BU.Fresh a -> a) -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkCallByValueTraced g = evalTraced g NLB.callByValueTraced
+mkCallByValueTraced :: Eq a => Printer a -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkCallByValueTraced p = evalTraced p NLB.callByValueTraced
 
-mkCallByValueTracedLimit :: Eq a => (BU.Fresh a -> a) -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
-mkCallByValueTracedLimit g i = evalTraced g (NLB.callByValueTracedLimit i)
+mkCallByValueTracedLimit :: Eq a => Printer a -> Int -> N.Exp a -> (N.Exp a, [N.Exp a])
+mkCallByValueTracedLimit p i = evalTraced p (NLB.callByValueTracedLimit i)
