@@ -1,0 +1,34 @@
+-- a 'standard library' of tested combinators for happy hacking;
+-- just replace the last id with your own program!
+
+let fix    = λg.(λx.g (x x)) (λx.g (x x)) in
+let id     = λx.x
+let zro    = λf.λx.x in
+let scc    = λn.λf.λx.f (n f x) in
+let prd    = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) in
+let one    = λf.λx.f x in 
+let n2c    = scc one in
+let n3c    = scc n2c in
+let n4c    = scc n3c in
+let n5c    = scc n4c in
+let n6c    = scc n5c in
+let n7c    = scc n6c in
+let n8c    = scc n7c in
+let n9c    = scc n8c in
+let tru    = λx.λy.x in
+let fls    = λx.λy.y in
+let and    = λp.λq.p q p in
+let or     = λp.λq.p p q in
+let not    = λp.λa.λb.p b a in
+let imp    = λp.λq.or (not p) q in
+let iff    = λp.λq.and (imp p q) (imp q p) in
+let if     = λp.λa.λb.p a b in
+let iszro  = λn.n (λx.fls) tru in
+let add    = fix (λradd.λm.λn.if (iszro n) m (scc (radd m (prd n)))) in
+let sub    = λm.λn.n prd m in
+let mlt    = fix (λrmlt.λm.λn.if (iszro m) zro (add n (rmlt (prd m) n))) in
+let fac    = fix (λrfac.λx. if (iszro x) one (mlt x (rfac (prd x)))) in
+let pow    = λb.λe.e b in
+let leqnat = λm.λn.iszro (sub m n) in
+let eqnat  = λm.λn.iff (leqnat m n) (leqnat n m) in
+id

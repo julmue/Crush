@@ -1,0 +1,33 @@
+-- the benchmark form Lennart Augustssons 
+-- 'Lambda Calculus cooked four ways'
+let False = λf.λt.f in
+let True = λf.λt.t in
+let if = λb.λt.λf.b f t in
+let Zero = λz.λs.z in
+let Succ = λn.λz.λs.s n in
+let one = Succ Zero in
+let two = Succ one in
+let three = Succ two in
+let isZero = λn.n True (λm.False) in
+let const = λx.λy.x in
+let Pair = λa.λb.λp.p a b in
+let fst = λab.ab (λa.λb.a) in
+let snd = λab.ab (λa.λb.b) in
+let fix = λg. (λx. g (x x)) (λx. g (x x)) in
+let add = fix (λradd.λx.λy. x y (\n. Succ (radd n y))) in
+let mul = fix (λrmul.λx.λy. x Zero (λn. add y (rmul n y))) in
+let fac = fix (λrfac.λx.x one (λn.mul x (rfac n))) in
+let eqnat = fix (λreqnat.λx.λy.x (y True (const False)) (λx1.y False (λy1.reqnat x1 y1))) in
+let sumto = fix (λrsumto.λx.x Zero (λn.add x (rsumto n))) in
+let n5 = add two three in
+let n6 = add three three in
+let n17 = add n6 (add n6 n5) in
+let n37 = Succ (mul n6 n6) in
+let n703 = sumto n37 in
+let n720 = fac n6 in
+eqnat n720 (add n703 n17)
+
+
+
+
+

@@ -1,0 +1,20 @@
+-- this lambda expression computes the number '42'
+-- this may take a while (really ...)
+-- watch the trace to see how big the terms get!
+
+let fix    = λg.(λx.g (x x)) (λx.g (x x)) in
+let zro    = λf.λx.x in
+let scc    = λn.λf.λx.f (n f x) in
+let prd    = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) in
+let tru    = λx.λy.x in
+let fls    = λx.λy.y in
+let if     = λp.λa.λb.p a b in
+let iszro  = λn.n (λx.fls) tru in
+let add    = fix (λradd.λm.λn.if (iszro n) m (scc (radd m (prd n)))) in
+let mlt    = fix (λrmlt.λm.λn.if (iszro m) zro (add n (rmlt (prd m) n))) in
+let one    = λf.λx.f x in 
+let two    = scc one in
+let n3c    = scc (scc one) in
+let n6c    = add n3c n3c in
+mlt (scc n6c) n6c
+

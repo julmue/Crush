@@ -1,0 +1,17 @@
+-- this superficially simple computation generates a surprisingly huge log;
+-- check it out!
+
+let fix    = λg.(λx.g (x x)) (λx.g (x x)) in
+let zro    = λf.λx.x in
+let scc    = λn.λf.λx.f (n f x) in
+let prd    = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) in
+let one    = λf.λx.f x in 
+let n2c    = scc one in
+let tru    = λx.λy.x in
+let fls    = λx.λy.y in
+let if     = λp.λa.λb.p a b in
+let iszro  = λn.n (λx.fls) tru in
+let add    = fix (λradd.λm.λn.if (iszro n) m (scc (radd m (prd n)))) in
+let mlt    = fix (λrmlt.λm.λn.if (iszro m) zro (add n (rmlt (prd m) n))) in
+mlt n2c n2c 
+
