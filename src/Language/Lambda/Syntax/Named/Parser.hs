@@ -43,6 +43,9 @@ lexer = T.makeTokenParser style
 parens :: S.Parser a -> S.Parser a
 parens = T.parens lexer
 
+dot :: S.Parser String
+dot = T.dot lexer
+
 reserved :: String -> S.Parser ()
 reserved = T.reserved lexer
 
@@ -68,10 +71,7 @@ lamP :: S.Parser (Exp String)
 lamP = do
     reservedOp "\\" <|> reservedOp "λ"
     n <- identifier
-    -- "." this is a hack because strange parsec behaviour with reservedOp "."
-    _ <- P.char '.'
-    P.spaces
-    --
+    _ <- dot
     e <- exprP
     return (Lam n e)
 
