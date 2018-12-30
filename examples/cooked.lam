@@ -1,24 +1,24 @@
--- the benchmark form Lennart Augustssons 
+-- the benchmark form Lennart Augustssons
 -- 'Lambda Calculus cooked four ways'
-let False = λf.λt.f in
-let True = λf.λt.t in
-let if = λb.λt.λf.b f t in
-let Zero = λz.λs.z in
-let Succ = λn.λz.λs.s n in
+let False = \f.\t.f in
+let True = \f.\t.t in
+let if = \b.\t.\f.b f t in
+let Zero = \z.\s.z in
+let Succ = \n.\z.\s.s n in
 let one = Succ Zero in
 let two = Succ one in
 let three = Succ two in
-let isZero = λn.n True (λm.False) in
-let const = λx.λy.x in
-let Pair = λa.λb.λp.p a b in
-let fst = λab.ab (λa.λb.a) in
-let snd = λab.ab (λa.λb.b) in
-let fix = λg. (λx. g (x x)) (λx. g (x x)) in
-let add = fix (λradd.λx.λy. x y (\n. Succ (radd n y))) in
-let mul = fix (λrmul.λx.λy. x Zero (λn. add y (rmul n y))) in
-let fac = fix (λrfac.λx.x one (λn.mul x (rfac n))) in
-let eqnat = fix (λreqnat.λx.λy.x (y True (const False)) (λx1.y False (λy1.reqnat x1 y1))) in
-let sumto = fix (λrsumto.λx.x Zero (λn.add x (rsumto n))) in
+let isZero = \n.n True (\m.False) in
+let const = \x.\y.x in
+let Pair = \a.\b.\p.p a b in
+let fst = \ab.ab (\a.\b.a) in
+let snd = \ab.ab (\a.\b.b) in
+let fix = \g. (\x. g (x x)) (\x. g (x x)) in
+let add = fix (\radd.\x.\y. x y (\n. Succ (radd n y))) in
+let mul = fix (\rmul.\x.\y. x Zero (\n. add y (rmul n y))) in
+let fac = fix (\rfac.\x.x one (\n.mul x (rfac n))) in
+let eqnat = fix (\reqnat.\x.\y.x (y True (const False)) (\x1.y False (\y1.reqnat x1 y1))) in
+let sumto = fix (\rsumto.\x.x Zero (\n.add x (rsumto n))) in
 let n5 = add two three in
 let n6 = add three three in
 let n17 = add n6 (add n6 n5) in

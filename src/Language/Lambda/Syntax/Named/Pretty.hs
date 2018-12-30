@@ -19,7 +19,7 @@ prettyP d (fun `App` arg) = maybeParens (d > aPrec) $
   where
     aPrec = 9
 prettyP d (Lam n b) = maybeParens (d > lPrec) $
-    text "λ" <> identifier n <> text "." <> prettyP lPrec b
+    text "\\" <> identifier n <> text "." <> prettyP lPrec b
   where
     lPrec = 6
 prettyP d (Let def term) = maybeParens (d > ltPrec) $

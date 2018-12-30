@@ -2,4 +2,4 @@
 -- this computation does not converge
 -- watch the trace and/or set a limit to the reduction steps
 
-let omega = λx.x x in omega omega
+let omega = \x.x x in omega omega

@@ -1,16 +1,16 @@
 -- this superficially simple computation generates a surprisingly huge log;
 -- check it out!
 
-let fix    = λg.(λx.g (x x)) (λx.g (x x)) in
-let zro    = λf.λx.x in
-let scc    = λn.λf.λx.f (n f x) in
-let prd    = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u) in
-let one    = λf.λx.f x in 
+let fix    = \g.(\x.g (x x)) (\x.g (x x)) in
+let zro    = \f.\x.x in
+let scc    = \n.\f.\x.f (n f x) in
+let prd    = \n.\f.\x.n (\g.\h.h (g f)) (\u.x) (\u.u) in
+let one    = \f.\x.f x in
 let n2c    = scc one in
-let tru    = λx.λy.x in
-let fls    = λx.λy.y in
-let if     = λp.λa.λb.p a b in
-let iszro  = λn.n (λx.fls) tru in
-let add    = fix (λradd.λm.λn.if (iszro n) m (scc (radd m (prd n)))) in
-let mlt    = fix (λrmlt.λm.λn.if (iszro m) zro (add n (rmlt (prd m) n))) in
-mlt n2c n2c 
+let tru    = \x.\y.x in
+let fls    = \x.\y.y in
+let if     = \p.\a.\b.p a b in
+let iszro  = \n.n (\x.fls) tru in
+let add    = fix (\radd.\m.\n.if (iszro n) m (scc (radd m (prd n)))) in
+let mlt    = fix (\rmlt.\m.\n.if (iszro m) zro (add n (rmlt (prd m) n))) in
+mlt n2c n2c
